@@ -1,3 +1,5 @@
+.SILENT:
+
 router1:
 	javac Applications/Router1/Router1.java
 	java Applications.Router1.Router1

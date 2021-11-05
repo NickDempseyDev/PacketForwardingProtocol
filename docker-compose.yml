@@ -1,11 +1,9 @@
 version: '3.7'
 networks: 
-  network1: 
-    external: 
-      name: network1
+  network1:  
+    name: network1
   network2:
-    external:
-      name: network2
+    name: network2
 
 services:
   router1:
@@ -16,10 +14,10 @@ services:
       - .:/dev/cs33031
     networks:
       - network1
-      - network2
     environment: 
-      TESTVAR: tester123
-
+      PORT_R: tester123
+    depends_on:
+      - router2
   router2:
     build: 
       context: ./src/Applications
@@ -30,6 +28,4 @@ services:
       - network1
       - network2
     environment: 
-      TESTVAR: tester123
-    depends_on:
-      - router1
+      PORT_R: tester123
