@@ -9,22 +9,27 @@ networks:
 
 services:
   router1:
-    image: debian:latest
-    build: ./src/Applications/Router1
+    build: 
+      context: ./src/Applications
+      dockerfile: ./Router1/Dockerfile
     volumes: 
-      - ./src/:/dev/cs33031
+      - .:/dev/cs33031
     networks:
       - network1
       - network2
     environment: 
       TESTVAR: tester123
+
   router2:
-    image: debian:latest
-    build: ./src/Applications/Router2
+    build: 
+      context: ./src/Applications
+      dockerfile: ./Router2/Dockerfile
     volumes: 
-      - ./src/:/dev/cs33031
+      - .:/dev/cs33031
     networks:
       - network1
       - network2
     environment: 
       TESTVAR: tester123
+    depends_on:
+      - router1
