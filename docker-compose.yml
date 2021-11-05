@@ -1,0 +1,30 @@
+version: '3.7'
+networks: 
+  network1: 
+    external: 
+      name: network1
+  network2:
+    external:
+      name: network2
+
+services:
+  router1:
+    image: debian:latest
+    build: ./src/Applications/Router1
+    volumes: 
+      - ./src/:/dev/cs33031
+    networks:
+      - network1
+      - network2
+    environment: 
+      TESTVAR: tester123
+  router2:
+    image: debian:latest
+    build: ./src/Applications/Router2
+    volumes: 
+      - ./src/:/dev/cs33031
+    networks:
+      - network1
+      - network2
+    environment: 
+      TESTVAR: tester123
