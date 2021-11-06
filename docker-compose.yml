@@ -1,10 +1,24 @@
 version: '3.7'
+# networks: 
+#   network1:  
+#     driver: bridge
+#     ipam:
+#       driver: default
+#       config:
+#         - subnet: "172.20.11.0/24"
+#   network2:
+#     driver: bridge
+#     ipam:
+#       driver: default
+#       config:
+#         - subnet: "172.20.33.0/24"
+
 networks: 
   network1:  
     name: network1
   network2:
     name: network2
-
+        
 services:
   router1:
     build: 
@@ -29,3 +43,19 @@ services:
       - network2
     environment: 
       PORT_R: tester123
+
+  # wireshark:
+  #   image: lscr.io/linuxserver/wireshark
+  #   container_name: wireshark
+  #   cap_add:
+  #     - NET_ADMIN
+  #   network_mode: host
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Europe/London
+  #   volumes:
+  #     - /path/to/config:/config
+  #   ports:
+  #     - 3000:3000 #optional
+  #   restart: unless-stopped
