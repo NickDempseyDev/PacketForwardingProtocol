@@ -12,8 +12,8 @@ public class Router1
 		try 
 		{
 			HashMap<String, InetAddress> existingRoutingTable = new HashMap<String, InetAddress>();
-			existingRoutingTable.put("tcd.scss", InetAddress.getByName("172.20.11.3"));
-			Router router = new Router("router1", existingRoutingTable);
+			existingRoutingTable.put("tcd.scss", InetAddress.getByName("172.20.11.2"));
+			Router router = new Router("router1", existingRoutingTable, InetAddress.getByName("172.20.11.3"));
 			router.simulateForwarding("tcd.scss", "This is a test payload simulated by router 1");
 			router.start();
 		} 

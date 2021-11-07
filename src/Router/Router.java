@@ -16,10 +16,11 @@ public class Router
 
 	HashMap<String, InetAddress> routingTable = new HashMap<String, InetAddress>();
 
-	public Router(String routerName, HashMap<String, InetAddress> existingRoutingTable)
+	public Router(String routerName, HashMap<String, InetAddress> existingRoutingTable, InetAddress myIp)
 	{
 		this.routerName = routerName;
 		this.routingTable = existingRoutingTable;
+		this.myIp = myIp;
 	}
 
 	public void printName()
@@ -40,7 +41,6 @@ public class Router
 	{
 		try
 		{
-			myIp = InetAddress.getLocalHost();
 			System.out.println("MY IP IS: " + myIp.getHostAddress());
 			boolean tempBool = true;
 			DatagramSocket socket = new DatagramSocket(listeningPort, myIp);
