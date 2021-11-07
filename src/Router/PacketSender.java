@@ -40,6 +40,7 @@ public class PacketSender implements Runnable
 					socket.setSoTimeout(500);
 					socket.receive(recvPacket);
 					attemptsToSend = 99;
+					
 				} 
 				catch (Exception e) 
 				{
