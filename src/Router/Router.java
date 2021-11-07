@@ -41,6 +41,7 @@ public class Router
 		try
 		{
 			myIp = InetAddress.getLocalHost();
+			System.out.println("MY IP IS: " + myIp.getHostAddress());
 			boolean tempBool = true;
 			DatagramSocket socket = new DatagramSocket(listeningPort, myIp);
 			while (tempBool)
