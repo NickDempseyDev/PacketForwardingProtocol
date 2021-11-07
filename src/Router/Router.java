@@ -40,10 +40,10 @@ public class Router
 	{
 		try
 		{
-			System.out.println("my ip: " + myIp.getHostAddress());
+			myIp = InetAddress.getLocalHost();
 			boolean tempBool = true;
 			DatagramSocket socket = new DatagramSocket(listeningPort, myIp);
-			while (tempBool) 
+			while (tempBool)
 			{
 				byte[] buffer = new byte[1500];
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
