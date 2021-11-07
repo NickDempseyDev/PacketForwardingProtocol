@@ -3,56 +3,62 @@ package Router;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.HashMap;
 
-public class Router {
+import Protocol.PacketHelper;
+
+public class Router
+{
+	int listeningPort = 51510;
 	String routerName;
 	InetAddress myIp;
 	InetAddress toIp;
 
-	public Router(String routerName, InetAddress myIp, InetAddress toIp) {
+	HashMap<String, InetAddress> routingTable = new HashMap<String, InetAddress>();
+
+	public Router(String routerName, HashMap<String, InetAddress> existingRoutingTable)
+	{
 		this.routerName = routerName;
-		this.myIp = myIp;
-		this.toIp = toIp;
+		this.routingTable = existingRoutingTable;
 	}
 
-	public void printName() {
+	public void printName()
+	{
 		System.out.println("Printing from the Router Class and implemented in: " + routerName + " " + myIp);
 	}
 
-	public void send(String msg) {
-		try 
-		{
-			System.out.println("my ip: " + myIp.getHostAddress() + "other ip: " + toIp.getHostAddress());
-			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.getBytes().length, toIp, 5000);
-			System.out.println("Message sent to: " + toIp + "from me: " + socket.getLocalAddress() + "\n  Message: " + msg);
-			socket.send(packet);
-			socket.close();
-		} 
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-		}
+	public void simulateForwarding(String netId, String msg)
+	{
+		PacketHelper packetHelper = new PacketHelper(netId, msg, (byte) 1);
+		InetAddress toIp = routingTable.get(netId);
+		PacketSender sender = new PacketSender(packetHelper, toIp, 51510);
+		Thread t = new Thread(sender);
+		t.start();
 	}
 
-	public void receive() {
-		try 
+	public void start()
+	{
+		try
 		{
 			System.out.println("my ip: " + myIp.getHostAddress());
-			byte[] buffer = new byte[1500];
-			DatagramSocket socket = new DatagramSocket(5000, myIp);
-			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-			socket.receive(packet);
+			boolean tempBool = true;
+			DatagramSocket socket = new DatagramSocket(listeningPort, myIp);
+			while (tempBool) 
+			{
+				byte[] buffer = new byte[1500];
+				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+				socket.receive(packet);
+				
+				byte[] data = new byte[packet.getData().length];
+				System.arraycopy(buffer, 0, data, 0, data.length);
 
-			byte[] data = new byte[packet.getData().length];
-			System.arraycopy(buffer, 0, data, 0, data.length);
-			String msgDecoded = new String(data);
-
-			System.out.println("Message received from : " + packet.getAddress() + "\n  Message: " + msgDecoded);
-
+				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), routingTable);
+				Thread t = new Thread(packetHandler);
+				t.start();
+			}
 			socket.close();
 		} 
-		catch (Exception e) 
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}

@@ -2,7 +2,7 @@ package Protocol;
 
 // import java.net.InetAddress;
 
-public class PacketHelpers 
+public class PacketHelper 
 {
 	byte[] data;
 	String[] netId;
@@ -12,7 +12,7 @@ public class PacketHelpers
 	// int fromPort;
 	String payload;
 
-	public PacketHelpers(byte[] data, byte type) 
+	public PacketHelper(byte[] data, byte type) 
 	{
 		this.data = data;
 		this.type = type;
@@ -20,7 +20,7 @@ public class PacketHelpers
 		decodeRouterPacket();
 	}
 
-	public PacketHelpers(String netIdString, String payload, byte type) 
+	public PacketHelper(String netIdString, String payload, byte type) 
 	{
 		this.payload = payload;
 		this.netIdString = netIdString;
@@ -37,6 +37,25 @@ public class PacketHelpers
 		createRouterPacket();
 	}
 
+
+	/**
+	 * @params void
+	 * 
+	 * @return void
+	 * 
+	 * @implNote The breakdown of the bytes for the Router packet is as follows:
+	 * 			 <ul>
+	 * 			 <li>[0] - type of packet (1 = Router)</li>
+	 * 			 <li>[1] - type (network id = 1, combination = 2)</li>
+	 * 			 <li>[2] - length of net id || number of net ids to follow</li>
+	 * 			 <li>[3, a || 3] - net id || length of net id 1</li>
+	 * 			 <li>[N/A || 4, a] - N/A || net id 1</li>
+	 * 		     <li>... more length of net ids and net id values</li>
+	 * 			 <li>[...] - payload length</li>
+	 * 			 <li>[... + 1] - payload</li>
+	 * 			 </ul>
+	 * 
+	 */
 	public void createRouterPacket() 
 	{
 		int sizeOfData = 3 + netId.length + payload.getBytes().length;
@@ -87,7 +106,7 @@ public class PacketHelpers
 	 * @return void
 	 * 
 	 * @implNote The breakdown of the bytes for the Router packet is as follows:
-	 * 		     [0] - type of packet (1 = Router)
+	 * 		     [0] - type of packet (1 = Router, 3 = ack)
 	 * 			 [1] - type (network id = 1, combination = 2)
 	 * 			 [2] - length of net id || number of net ids to follow
 	 * 			 [3, a || 3] - net id || length of net id 1
@@ -128,5 +147,52 @@ public class PacketHelpers
 
 		payload = new String(temp);
 
+	}
+
+	public void createAck()
+	{
+		data = new byte[2];
+		data[0] = 0x3;
+		data[1] = this.type;
+	}
+
+	public byte[] getData() 
+	{
+		return data;
+	}
+
+	public void setData(byte[] data) 
+	{
+		this.data = data;
+	}
+
+	public String[] getNetId() 
+	{
+		return netId;
+	}
+
+	public void setNetId(String[] netId) 
+	{
+		this.netId = netId;
+	}
+
+	public String getNetIdString() 
+	{
+		return netIdString;
+	}
+
+	public void setNetIdString(String netIdString) 
+	{
+		this.netIdString = netIdString;
+	}
+
+	public String getPayload() 
+	{
+		return payload;
+	}
+
+	public void setPayload(String payload) 
+	{
+		this.payload = payload;
 	}
 }
