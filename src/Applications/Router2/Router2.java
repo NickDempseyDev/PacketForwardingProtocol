@@ -1,26 +1,21 @@
 package Applications.Router2;
 
 import java.net.InetAddress;
+import java.util.HashMap;
 
 import Router.Router;
 
 public class Router2 {
 	public static void main(String[] args) {
-		try {
-			InetAddress ip = InetAddress.getByName("172.20.11.2");
-			Router router = new Router("router2", ip, ip);
-			router.receive();
-			// InetAddress localhost = InetAddress.getLocalHost();
-  			// System.out.println(" IP Addr: " + localhost.getHostAddress());
-  			// // Just in case this host has multiple IP addresses....
-  			// InetAddress[] allMyIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
-  			// if (allMyIps != null) {
-    		// 	System.out.println(" Full list of IP addresses:");
-    		// 	for (int i = 0; i < allMyIps.length; i++) {
-			// 		System.out.println("    " + allMyIps[i]);
-    		// 	}
-  			// }
-		} catch (Exception e) {
+		try
+		{
+			HashMap<String, InetAddress> existingRoutingTable = new HashMap<String, InetAddress>();
+			existingRoutingTable.put("tcd.scss", InetAddress.getByName("172.20.11.4"));
+			Router router = new Router("router1", existingRoutingTable);
+			router.start();
+		}
+		catch (Exception e)
+		{
 			System.out.println(" (error retrieving server host name)");
 		}
 	}

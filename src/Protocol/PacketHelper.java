@@ -37,6 +37,15 @@ public class PacketHelper
 		createRouterPacket();
 	}
 
+	// Just in case this host has multiple IP addresses....
+  	// InetAddress[] allMyIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
+  	// if (allMyIps != null) {
+    // 	System.out.println(" Full list of IP addresses:");
+    // 	for (int i = 0; i < allMyIps.length; i++) {
+	// 		System.out.println("    " + allMyIps[i]);
+    // 	}
+  	// }
+
 
 	/**
 	 * @params void

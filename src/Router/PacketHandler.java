@@ -26,7 +26,7 @@ public class PacketHandler implements Runnable
 
 	public void contactController()
 	{
-
+		System.out.println("Here I would contact the controller... but the controller has not yet been implemented");
 	}
 
 	public void forwardPacket()
