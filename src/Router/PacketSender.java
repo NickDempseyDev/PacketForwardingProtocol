@@ -32,7 +32,7 @@ public class PacketSender implements Runnable
 			{
 				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, toIp, toPort);
 				socket.send(packet);
-				System.out.println("forwarding the packet to: " + toIp + "\nnetId: " + packetHelper.getNetIdString());
+				System.out.println("forwarding the packet to: " + toIp + "\n    netId: " + packetHelper.getNetIdString());
 				byte[] buffer = new byte[1500];
 				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 				try 

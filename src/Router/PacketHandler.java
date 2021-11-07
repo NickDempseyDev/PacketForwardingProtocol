@@ -59,6 +59,7 @@ public class PacketHandler implements Runnable
 			System.out.println("received forwarded packet from: " + fromIp + "\nnetId: " + packetHelper.getNetIdString());
 			socket.send(packet);
 			socket.close();
+			forwardPacket();
 		} 
 		catch (Exception e) 
 		{
