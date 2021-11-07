@@ -7,7 +7,7 @@ import Router.Router;
 public class Router2 {
 	public static void main(String[] args) {
 		try {
-			InetAddress ip = InetAddress.getByName("172.20.11.3");
+			InetAddress ip = InetAddress.getByName("172.20.11.2");
 			Router router = new Router("router2", ip, ip);
 			router.receive();
 			// InetAddress localhost = InetAddress.getLocalHost();

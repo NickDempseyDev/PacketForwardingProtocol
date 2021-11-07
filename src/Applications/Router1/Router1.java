@@ -9,7 +9,7 @@ public class Router1 {
 	public static void main(String[] args) {
 		try {
 			InetAddress ip = InetAddress.getLocalHost();
-			InetAddress toIp = InetAddress.getByName("172.20.11.3");
+			InetAddress toIp = InetAddress.getByName("172.20.11.2");
 			Router router = new Router("router1", ip, toIp);
 			router.send("TEST MESSAGE");
 			InetAddress localhost = InetAddress.getLocalHost();

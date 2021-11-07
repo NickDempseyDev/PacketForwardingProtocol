@@ -1,23 +1,23 @@
 version: '3.7'
-# networks: 
-#   network1:  
-#     driver: bridge
-#     ipam:
-#       driver: default
-#       config:
-#         - subnet: "172.20.11.0/24"
-#   network2:
-#     driver: bridge
-#     ipam:
-#       driver: default
-#       config:
-#         - subnet: "172.20.33.0/24"
-
 networks: 
   network1:  
-    name: network1
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.20.11.0/24"
   network2:
-    name: network2
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.20.33.0/24"
+
+# networks: 
+#   network1:  
+#     name: network1
+#   network2:
+#     name: network2
         
 services:
   router1:
