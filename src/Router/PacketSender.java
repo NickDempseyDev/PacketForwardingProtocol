@@ -49,7 +49,10 @@ public class PacketSender implements Runnable
 			{
 				System.out.println("failed to send to " + toIp + " after " + attemptsToSend + " attempts at sending");
 			}
-			System.out.println("received acknowledgement packet from: " + packet.getAddress());
+			else
+			{
+				System.out.println("received acknowledgement packet from: " + packet.getAddress());
+			}
 			socket.close();
 		} 
 		catch (Exception e)
