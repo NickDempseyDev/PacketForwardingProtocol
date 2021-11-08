@@ -1,4 +1,5 @@
 version: '3.7'
+networks:
   network1:  
     driver: bridge
     ipam:
@@ -50,8 +51,8 @@ services:
     environment: 
       PORT_R: tester123
     depends_on:
-      - endpointReceiver
-  endpointSender:
+      - endpointreceiver
+  endpointsender:
     build: 
       context: ./src/Applications
       dockerfile: ./EndpointSenderTest/Dockerfile
@@ -63,7 +64,7 @@ services:
       PORT_R: tester123
     depends_on:
       - router1
-  endpointReceiver:
+  endpointreceiver:
     build: 
       context: ./src/Applications
       dockerfile: ./EndpointReceiverTest/Dockerfile
