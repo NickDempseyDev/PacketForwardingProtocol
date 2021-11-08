@@ -20,7 +20,7 @@ public class EndpointSenderTest
     		// 	}
   			// }
 			InetAddress nextRouter = InetAddress.getByName("172.20.11.2");
-			EndpointRouter router = new EndpointRouter("EndpointRouter", InetAddress.getLocalHost(), nextRouter);
+			EndpointRouter router = new EndpointRouter("EndpointRouterSender", InetAddress.getLocalHost(), nextRouter);
 			ApplicationTest application = new ApplicationTest(InetAddress.getLocalHost());
 			Thread tRouter = new Thread(router);
 			Thread tApplication = new Thread(application);

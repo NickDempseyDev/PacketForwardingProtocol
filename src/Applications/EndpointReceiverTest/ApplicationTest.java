@@ -22,7 +22,7 @@ public class ApplicationTest implements Runnable
 		{
 			System.out.println("MY IP IS: " + myIp.getHostAddress());
 			boolean tempBool = true;
-			DatagramSocket socket = new DatagramSocket(51511, myIp);
+			DatagramSocket socket = new DatagramSocket(51511, InetAddress.getLocalHost());
 			while (tempBool)
 			{
 				byte[] buffer = new byte[1500];

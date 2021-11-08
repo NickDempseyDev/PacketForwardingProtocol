@@ -30,9 +30,9 @@ public class ApplicationTest implements Runnable
 			DatagramPacket packet = null;
 			while (attemptsToSend < 3)
 			{
-				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, myIp, localRouterPort);
+				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, InetAddress.getLocalHost(), localRouterPort);
 				socket.send(packet);
-				System.out.println("forwarding the packet to: " + localRouterPort + "\n    netId: " + packetHelper.getNetIdString());
+				System.out.println("endpoint sender application forwarding the packet to: " + localRouterPort + "\n    netId: " + packetHelper.getNetIdString());
 				byte[] buffer = new byte[1500];
 				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 				try 
@@ -42,7 +42,7 @@ public class ApplicationTest implements Runnable
 					attemptsToSend = 99;
 					
 				} 
-				catch (Exception e) 
+				catch (Exception e)
 				{
 					attemptsToSend++;
 				}

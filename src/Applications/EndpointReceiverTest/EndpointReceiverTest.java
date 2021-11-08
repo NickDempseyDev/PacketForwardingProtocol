@@ -20,7 +20,7 @@ public class EndpointReceiverTest
     		// 	}
   			// }
 			InetAddress nextRouter = InetAddress.getLocalHost();
-			EndpointRouter router = new EndpointRouter("EndpointRouter", InetAddress.getLocalHost(), nextRouter);
+			EndpointRouter router = new EndpointRouter("EndpointRouterReceiver", InetAddress.getLocalHost(), nextRouter);
 			ApplicationTest application = new ApplicationTest(InetAddress.getLocalHost());
 			Thread tRouter = new Thread(router);
 			Thread tApplication = new Thread(application);

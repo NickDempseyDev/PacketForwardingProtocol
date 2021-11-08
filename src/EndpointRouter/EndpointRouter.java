@@ -49,6 +49,6 @@ public class EndpointRouter implements Runnable
 	@Override
 	public void run()
 	{
-
+		start();
 	}
 }
