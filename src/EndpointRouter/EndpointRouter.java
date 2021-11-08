@@ -33,8 +33,17 @@ public class EndpointRouter implements Runnable
 				
 				byte[] data = new byte[packet.getData().length];
 				System.arraycopy(buffer, 0, data, 0, data.length);
+				int nextPort;
+				if (data[0] == (byte) 1)
+				{
+					nextPort = 51511;
+				}
+				else
+				{
+					nextPort = 51510;
+				}
 
-				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), nextRouter);
+				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), nextRouter, nextPort);
 				Thread t = new Thread(packetHandler);
 				t.start();
 			}

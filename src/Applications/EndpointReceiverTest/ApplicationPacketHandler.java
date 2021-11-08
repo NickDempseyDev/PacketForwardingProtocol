@@ -30,7 +30,7 @@ public class ApplicationPacketHandler implements Runnable
 			packetHelper.createAck();
 			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, ip, port);
-			System.out.println("received forwarded packet from: " + port + "\n    netId: " + packetHelper.getNetIdString());
+			System.out.println("received forwarded packet from: " + port + "\n    netId: " + packetHelper.getNetIdString() + "\n    payload: " + packetHelper.getPayload());
 			socket.send(packet);
 			socket.close();
 		} 

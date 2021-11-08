@@ -14,30 +14,30 @@ public class PacketHandler implements Runnable
 	int fromPort;
 	InetAddress fromIp;
 	InetAddress nextIp;
-	int toPort;
+	int nextPort;
 
-	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, InetAddress nextIp)
+	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, InetAddress nextIp, int nextPort)
 	{
 		this.data = data;
 		this.fromIp = fromIp;
 		this.fromPort = fromPort;
 		this.nextIp = nextIp;
-		this.toPort = (data[0] == (byte) 1 ? 51511 : 51510);
+		this.nextPort = nextPort;
 	}
 
 	public void send(String from)
 	{
 		packetHelper.createRouterOrEndpointPacket();
-		int attemptsToSend = 1;
+		int attemptsToSend = 0;
 		try
 		{
 			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket packet = null;
 			while (attemptsToSend < 3)
 			{
-				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, nextIp, toPort);
+				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, nextIp, nextPort);
 				socket.send(packet);
-				System.out.println("forwarding the packet to a: " + from + "\n    PORT: " + toPort + "\n    netId: " + packetHelper.getNetIdString());
+				System.out.println("forwarding the packet to a: " + from + "\n    PORT: " + nextPort + "\n    netId: " + packetHelper.getNetIdString());
 				byte[] buffer = new byte[1500];
 				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 				try
@@ -54,7 +54,7 @@ public class PacketHandler implements Runnable
 			}
 			if (attemptsToSend == 3) 
 			{
-				System.out.println("failed to send to a: " + from + "\n    PORT: " + toPort + "\n    after " + attemptsToSend + " attempts at sending");
+				System.out.println("failed to send to a: " + from + "\n    PORT: " + nextPort + "\n    after " + attemptsToSend + " attempts at sending");
 			}
 			else
 			{
@@ -83,7 +83,7 @@ public class PacketHandler implements Runnable
 		String from = "Router";
 		if (data[0] == (byte) 0x3)
 		{
-			from = "Endpoint";
+			from = new String("Endpoint");
 		}
 		System.out.println("received forwarded packet from a: " + from + "\n    IP: " + fromIp + "\n    netId: " + packetHelper.getNetIdString());
 		
