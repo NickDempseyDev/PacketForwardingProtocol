@@ -11,20 +11,19 @@ public class Router1
 	{
 		try 
 		{
-			System.out.println("i am router1 my ip's are: ");
-			InetAddress localhost = InetAddress.getLocalHost();
-			InetAddress[] allMyIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
-  			if (allMyIps != null) {
-    			System.out.println(" Full list of IP addresses:");
-    			for (int i = 0; i < allMyIps.length; i++) {
-					System.out.println("    " + allMyIps[i]);
-    			}
-  			}
-			// HashMap<String, InetAddress> existingRoutingTable = new HashMap<String, InetAddress>();
-			// existingRoutingTable.put("tcd.scss", InetAddress.getByName("172.20.11.2"));
-			// Router router = new Router("router1", existingRoutingTable, InetAddress.getByName("172.20.11.3"));
-			// router.simulateForwarding("tcd.scss", "This is a test payload simulated by router 1");
-			// router.start();
+			// System.out.println("i am router1 my ip's are: ");
+			// InetAddress localhost = InetAddress.getLocalHost();
+			// InetAddress[] allMyIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
+  			// if (allMyIps != null) {
+    		// 	System.out.println(" Full list of IP addresses:");
+    		// 	for (int i = 0; i < allMyIps.length; i++) {
+			// 		System.out.println("    " + allMyIps[i]);
+    		// 	}
+  			// }
+			HashMap<String, InetAddress> existingRoutingTable = new HashMap<String, InetAddress>();
+			existingRoutingTable.put("tcd.scss", InetAddress.getByName("172.20.33.2"));
+			Router router = new Router("router1", existingRoutingTable, InetAddress.getByName("172.20.11.3"));
+			router.start();
 		} 
 		catch (Exception e) 
 		{

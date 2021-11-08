@@ -13,15 +13,15 @@ public class PacketHandler implements Runnable
 	PacketHelper packetHelper;
 	int fromPort;
 	InetAddress fromIp;
-	InetAddress ip;
+	InetAddress nextIp;
 	int toPort;
 
-	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, InetAddress ip)
+	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, InetAddress nextIp)
 	{
 		this.data = data;
 		this.fromIp = fromIp;
 		this.fromPort = fromPort;
-		this.ip = ip;
+		this.nextIp = nextIp;
 		this.toPort = (data[0] == (byte) 1 ? 51511 : 51510);
 	}
 
@@ -35,7 +35,7 @@ public class PacketHandler implements Runnable
 			DatagramPacket packet = null;
 			while (attemptsToSend < 3)
 			{
-				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, ip, toPort);
+				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, nextIp, toPort);
 				socket.send(packet);
 				System.out.println("forwarding the packet to a: " + from + "\n    PORT: " + toPort + "\n    netId: " + packetHelper.getNetIdString());
 				byte[] buffer = new byte[1500];

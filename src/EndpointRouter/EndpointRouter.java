@@ -9,11 +9,13 @@ public class EndpointRouter implements Runnable
 	int listeningPort = 51510;
 	String routerName;
 	InetAddress myIp;
+	InetAddress nextRouter;
 
-	public EndpointRouter(String routerName, InetAddress myIp)
+	public EndpointRouter(String routerName, InetAddress myIp, InetAddress nextRouter)
 	{
 		this.routerName = routerName;
 		this.myIp = myIp;
+		this.nextRouter = nextRouter;
 	}
 
 	public void start()
@@ -32,7 +34,7 @@ public class EndpointRouter implements Runnable
 				byte[] data = new byte[packet.getData().length];
 				System.arraycopy(buffer, 0, data, 0, data.length);
 
-				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), myIp);
+				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), nextRouter);
 				Thread t = new Thread(packetHandler);
 				t.start();
 			}

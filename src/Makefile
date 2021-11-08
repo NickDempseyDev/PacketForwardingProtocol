@@ -9,7 +9,7 @@ router2:
 	java -cp ../bin Applications.Router2.Router2
 
 endpointSender:
-	javac Applications/EndpointSendersTest/EndpointSendersTest.java -d ../bin
+	javac Applications/EndpointSenderTest/EndpointSenderTest.java -d ../bin
 	java -cp ../bin Applications.EndpointSenderTest.EndpointSenderTest
 
 endpointReceiver:

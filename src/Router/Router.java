@@ -27,14 +27,14 @@ public class Router
 		System.out.println("Printing from the Router Class and implemented in: " + routerName + " " + myIp);
 	}
 
-	public void simulateForwarding(String netId, String msg)
-	{
-		PacketHelper packetHelper = new PacketHelper(netId, msg, (byte) 1);
-		InetAddress toIp = routingTable.get(netId);
-		PacketSender sender = new PacketSender(packetHelper, toIp, 51510);
-		Thread t = new Thread(sender);
-		t.start();
-	}
+	// public void simulateForwarding(String netId, String msg)
+	// {
+	// 	PacketHelper packetHelper = new PacketHelper(netId, msg, (byte) 1);
+	// 	InetAddress toIp = routingTable.get(netId);
+	// 	PacketSender sender = new PacketSender(packetHelper, toIp, 51510);
+	// 	Thread t = new Thread(sender);
+	// 	t.start();
+	// }
 
 	public void start()
 	{
@@ -42,7 +42,7 @@ public class Router
 		{
 			System.out.println("MY IP IS: " + myIp.getHostAddress());
 			boolean tempBool = true;
-			DatagramSocket socket = new DatagramSocket(listeningPort, myIp);
+			DatagramSocket socket = new DatagramSocket(listeningPort, InetAddress.getByName("0.0.0.0"));
 			while (tempBool)
 			{
 				byte[] buffer = new byte[1500];
