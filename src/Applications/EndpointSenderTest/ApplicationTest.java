@@ -1,27 +1,27 @@
-package Router;
+package Applications.EndpointSenderTest;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+
 import Protocol.PacketHelper;
 
-public class PacketSender implements Runnable
+public class ApplicationTest implements Runnable
 {
-	
-	PacketHelper packetHelper;
-	InetAddress toIp;
-	int toPort;
+	InetAddress myIp;
+	int localRouterPort;
 
-	public PacketSender(PacketHelper packetHelper, InetAddress toIp, int toPort)
+	public ApplicationTest(InetAddress myIp)
 	{
-		this.packetHelper = packetHelper;
-		this.toIp = toIp;
-		this.toPort = toPort;
+		this.myIp = myIp;
+		this.localRouterPort = 51510;
 	}
 
 	@Override
 	public void run()
 	{
+		// send a packet to the other endpoint
+		PacketHelper packetHelper = new PacketHelper("tcd.scss", "payload from sendingEndpoint", (byte) 0x3);
 		packetHelper.createRouterOrEndpointPacket();
 		int attemptsToSend = 1;
 		try
@@ -30,9 +30,9 @@ public class PacketSender implements Runnable
 			DatagramPacket packet = null;
 			while (attemptsToSend < 3)
 			{
-				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, toIp, toPort);
+				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, myIp, localRouterPort);
 				socket.send(packet);
-				System.out.println("forwarding the packet to: " + toIp + "\n    netId: " + packetHelper.getNetIdString());
+				System.out.println("forwarding the packet to: " + localRouterPort + "\n    netId: " + packetHelper.getNetIdString());
 				byte[] buffer = new byte[1500];
 				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 				try 
@@ -49,11 +49,11 @@ public class PacketSender implements Runnable
 			}
 			if (attemptsToSend == 3) 
 			{
-				System.out.println("failed to send to " + toIp + " after " + attemptsToSend + " attempts at sending");
+				System.out.println("failed to send to " + localRouterPort + " after " + attemptsToSend + " attempts at sending");
 			}
 			else
 			{
-				System.out.println("received acknowledgement packet from: " + packet.getAddress());
+				System.out.println("received acknowledgement packet from: " + packet.getPort());
 			}
 			socket.close();
 		} 

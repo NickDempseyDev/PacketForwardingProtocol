@@ -12,16 +12,17 @@ public class PacketHelper
 	// int fromPort;
 	String payload;
 
-	public PacketHelper(byte[] data, byte type) 
+	public PacketHelper(byte[] data, byte type)
 	{
 		this.data = data;
 		this.type = type;
 		// use type to decide which handler to call
-		decodeRouterPacket();
+		decodeRouterOrEndpointPacket();
 	}
 
 	public PacketHelper(String netIdString, String payload, byte type) 
 	{
+		this.type = type;
 		this.payload = payload;
 		this.netIdString = netIdString;
 		if (netIdString.split("\\.").length == 0) 
@@ -34,7 +35,7 @@ public class PacketHelper
 			this.netId = netIdString.split("\\.");
 		}
 		// use type to decide which handler to call
-		createRouterPacket();
+		createRouterOrEndpointPacket();
 	}
 
 	// Just in case this host has multiple IP addresses....
@@ -54,7 +55,7 @@ public class PacketHelper
 	 * 
 	 * @implNote The breakdown of the bytes for the Router packet is as follows:
 	 * 			 <ul>
-	 * 			 <li>[0] - type of packet (1 = Router)</li>
+	 * 			 <li>[0] - type of packet (1 = Router, 3 == endpoint)</li>
 	 * 			 <li>[1] - type (network id = 1, combination = 2)</li>
 	 * 			 <li>[2] - length of net id || number of net ids to follow</li>
 	 * 			 <li>[3, a || 3] - net id || length of net id 1</li>
@@ -65,7 +66,7 @@ public class PacketHelper
 	 * 			 </ul>
 	 * 
 	 */
-	public void createRouterPacket() 
+	public void createRouterOrEndpointPacket() 
 	{
 		int sizeOfData = 3 + netId.length + payload.getBytes().length;
 
@@ -125,7 +126,7 @@ public class PacketHelper
 	 * 			 [... + 1] - payload
 	 * 
 	 */
-	public void decodeRouterPacket() 
+	public void decodeRouterOrEndpointPacket() 
 	{
 		int numOfNetIds = 1;
 		int currPos = 2;
@@ -163,6 +164,14 @@ public class PacketHelper
 		data = new byte[2];
 		data[0] = 0x3;
 		data[1] = this.type;
+	}
+
+	public byte getType() {
+		return type;
+	}
+
+	public void setType(byte type) {
+		this.type = type;
 	}
 
 	public byte[] getData() 

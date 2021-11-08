@@ -12,7 +12,6 @@ public class Router
 	int listeningPort = 51510;
 	String routerName;
 	InetAddress myIp;
-	InetAddress toIp;
 
 	HashMap<String, InetAddress> routingTable = new HashMap<String, InetAddress>();
 

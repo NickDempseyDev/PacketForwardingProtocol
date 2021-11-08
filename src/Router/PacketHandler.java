@@ -49,14 +49,14 @@ public class PacketHandler implements Runnable
 	public void run()
 	{
 		this.packetHelper = new PacketHelper(data, data[0]);
-		packetHelper.decodeRouterPacket();
+		packetHelper.decodeRouterOrEndpointPacket();
 		
 		try 
 		{
 			packetHelper.createAck();
 			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, fromIp, fromPort);
-			System.out.println("received forwarded packet from: " + fromIp + "\nnetId: " + packetHelper.getNetIdString());
+			System.out.println("received forwarded packet from: " + fromIp + "\n    netId: " + packetHelper.getNetIdString());
 			socket.send(packet);
 			socket.close();
 			forwardPacket();

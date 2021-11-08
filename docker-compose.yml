@@ -1,5 +1,4 @@
 version: '3.7'
-networks: 
   network1:  
     driver: bridge
     ipam:
@@ -12,6 +11,12 @@ networks:
       driver: default
       config:
         - subnet: "172.20.33.0/24"
+  network3:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.20.44.0/24"
 
 # networks: 
 #   network1:  
@@ -28,6 +33,7 @@ services:
       - .:/dev/cs33031
     networks:
       - network1
+      - network2
     environment: 
       PORT_R: tester123
     depends_on:
@@ -39,8 +45,32 @@ services:
     volumes: 
       - .:/dev/cs33031
     networks:
-      - network1
       - network2
+      - network3
+    environment: 
+      PORT_R: tester123
+    depends_on:
+      - endpointReceiver
+  endpointSender:
+    build: 
+      context: ./src/Applications
+      dockerfile: ./EndpointSenderTest/Dockerfile
+    volumes: 
+      - .:/dev/cs33031
+    networks:
+      - network1
+    environment: 
+      PORT_R: tester123
+    depends_on:
+      - router1
+  endpointReceiver:
+    build: 
+      context: ./src/Applications
+      dockerfile: ./EndpointReceiverTest/Dockerfile
+    volumes: 
+      - .:/dev/cs33031
+    networks:
+      - network3
     environment: 
       PORT_R: tester123
 
