@@ -116,7 +116,7 @@ public class PacketHelper
 	 * @return void
 	 * 
 	 * @implNote The breakdown of the bytes for the Router packet is as follows:
-	 * 		     [0] - type of packet (1 = Router, 3 = ack)
+	 * 		     [0] - type of packet (1 = Router, 2 = Endpoint, 3 = ack, 4 = Controller)
 	 * 			 [1] - type (network id = 1, combination = 2)
 	 * 			 [2] - length of net id || number of net ids to follow
 	 * 			 [3, a || 3] - net id || length of net id 1
