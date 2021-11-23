@@ -5,18 +5,20 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.HashMap;
 
+import Protocol.ControllerPacketData;
+import Protocol.EndpointPacketData;
 import Protocol.PacketHelper;
+import Protocol.RouterPacketData;
 
 public class PacketHandler implements Runnable
 {
 
 	byte[] data;
-	PacketHelper packetHelper;
 	int fromPort;
 	InetAddress fromIp;
-	HashMap<String, InetAddress> routingTable;
+	HashMap<String, String> routingTable;
 
-	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, HashMap<String, InetAddress> routingTable)
+	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, HashMap<String, String> routingTable)
 	{
 		this.data = data;
 		this.fromIp = fromIp;
@@ -29,41 +31,49 @@ public class PacketHandler implements Runnable
 		System.out.println("Here I would contact the controller... but the controller has not yet been implemented");
 	}
 
-	public void forwardPacket()
+	public void forwardPacket(byte[] data, String netIdString)
 	{
-		String netId = packetHelper.getNetIdString();
-		if (!routingTable.containsKey(netId))
+		if (!routingTable.containsKey(netIdString))
 		{
 			contactController();
 		}
 		else
 		{
-			InetAddress toIp = routingTable.get(netId);
-			PacketSender sender = new PacketSender(packetHelper, toIp, 51510);
+			String toIp = routingTable.get(netIdString);
+			PacketSender sender = new PacketSender(data, toIp, 51510, netIdString, fromPort, fromIp);
 			Thread t = new Thread(sender);
 			t.start();
 		}
 	}
 
+	public void updateRoutingTable(String netIdString, String nextHop)
+	{
+
+	}
+
 	@Override
 	public void run()
 	{
-		this.packetHelper = new PacketHelper(data, data[0]);
-		packetHelper.decodeRouterOrEndpointPacket();
-		
-		try 
+		if (data[0] == 0x1 /* Received a router packet */)
 		{
-			packetHelper.createAck();
-			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, fromIp, fromPort);
-			System.out.println("received forwarded packet from: " + fromIp + "\n    netId: " + packetHelper.getNetIdString());
-			socket.send(packet);
-			socket.close();
-			forwardPacket();
-		} 
-		catch (Exception e) 
+			RouterPacketData routerPacket = new RouterPacketData(data);
+			forwardPacket(data, routerPacket.getNetIdString());
+		}
+		else if (data[0] == 0x2 /* Received an endpoint packet */)
 		{
-			e.printStackTrace();
+			EndpointPacketData endpointPacket = new EndpointPacketData(data);
+			endpointPacket.setType((byte) 0x1);
+			endpointPacket.createPacket();
+			forwardPacket(endpointPacket.getData(), endpointPacket.getNetIdString());
+		}
+		else if (data[0] == 0x4 /* Received a controller packet */)
+		{
+			ControllerPacketData controllerPacket = new ControllerPacketData(data);
+			updateRoutingTable(controllerPacket.getNetIdString(), controllerPacket.getNextHop());
+		}
+		else
+		{
+			System.out.println("shouldnt be happening");
 		}
 	}
 }

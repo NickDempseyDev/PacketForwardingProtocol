@@ -4,38 +4,68 @@ package Protocol;
 
 public class PacketHelper 
 {
+	byte type;
 	byte[] data;
 	String[] netId;
 	String netIdString;
-	byte type;
-	// InetAddress fromIp;
-	// int fromPort;
 	String payload;
+	String nextHop;
 
 	public PacketHelper(byte[] data, byte type)
 	{
-		this.data = data;
 		this.type = type;
-		// use type to decide which handler to call
-		decodeRouterOrEndpointPacket();
+
+		if (type == 0x1 /* Router */ || type == 0x2 /* Endpoint */) 
+		{
+			this.data = data;
+			decodeRouterOrEndpointPacket();
+		}
+		else if (type == 0x4 /* Controller */)
+		{
+			this.data = data;
+			decodeRouterControllerpacket();
+		}
 	}
 
 	public PacketHelper(String netIdString, String payload, byte type) 
 	{
 		this.type = type;
-		this.payload = payload;
-		this.netIdString = netIdString;
-		if (netIdString.split("\\.").length == 0) 
+
+		if (type == 0x1 /* Router */ || type == 0x2 /* Endpoint */)
 		{
-			this.netId = new String[1];
-			this.netId[0] = netIdString;
+			this.payload = payload;
+			this.netIdString = netIdString;
+			if (netIdString.split("\\.").length == 0)
+			{
+				this.netId = new String[1];
+				this.netId[0] = netIdString;
+			}
+			else
+			{
+				this.netId = netIdString.split("\\.");
+			}
+			createRouterOrEndpointPacket();
 		}
-		else 
+	}
+
+	public PacketHelper(byte type, String nextHop, String netIdString)
+	{
+		if (type == 0x4 /* Controller */)
 		{
-			this.netId = netIdString.split("\\.");
+			this.type = type;
+			this.nextHop = nextHop;
+			this.netIdString = netIdString;
+			if (netIdString.split("\\.").length == 0)
+			{
+				this.netId = new String[1];
+				this.netId[0] = netIdString;
+			}
+			else
+			{
+				this.netId = netIdString.split("\\.");
+			}
+			createControllerPacket();
 		}
-		// use type to decide which handler to call
-		createRouterOrEndpointPacket();
 	}
 
 	// Just in case this host has multiple IP addresses....
@@ -55,31 +85,42 @@ public class PacketHelper
 	 * 
 	 * @implNote The breakdown of the bytes for the Router packet is as follows:
 	 * 			 <ul>
-	 * 			 <li>[0] - type of packet (1 = Router, 3 == endpoint)</li>
-	 * 			 <li>[1] - type (network id = 1, combination = 2)</li>
-	 * 			 <li>[2] - length of net id || number of net ids to follow</li>
-	 * 			 <li>[3, a || 3] - net id || length of net id 1</li>
-	 * 			 <li>[N/A || 4, a] - N/A || net id 1</li>
+	 * 			 <li>if there is no combination in the net id:</li>
+	 * 			 <li>[0] - type of packet (1 = Router, 2 = Endpoint, 3 = Ack, 4 = Controller)</li>
+	 * 			 <li>[1] - type (network id = 1, combination = 2, next hop = 3)</li>
+	 * 			 <li>[2] - length of net id</li>
+	 * 			 <li>[3, a]- net id</li>
+	 * 			 <li>[a+1] - payload length</li>
+	 * 			 <li>[a+2, b] - payload</li>
+	 * 			 </ul>
+	 * 
+	 * 			 <ul>
+	 * 			 <li>if there is combination in the net id:</li>
+	 * 			 <li>[0] - type of packet (1 = Router, 2 = Endpoint, 3 = Ack, 4 = Controller)</li>
+	 * 			 <li>[1] - type (network id = 1, combination = 2, next hop = 3)</li>
+	 * 			 <li>[2] - number of net ids to follow</li>
+	 * 			 <li>[3] - length of net id 1</li>
+	 * 			 <li>[4, a] - net id 1</li>
 	 * 		     <li>... more length of net ids and net id values</li>
 	 * 			 <li>[...] - payload length</li>
-	 * 			 <li>[... + 1] - payload</li>
+	 * 			 <li>[... + 1, b] - payload</li>
 	 * 			 </ul>
 	 * 
 	 */
 	public void createRouterOrEndpointPacket() 
 	{
-		int sizeOfData = 3 + netId.length + payload.getBytes().length;
+		int sizeOfData = 3 + this.netId.length + this.payload.getBytes().length;
 
-		for (String netIdTemp : netId)
+		for (String netIdTemp : this.netId)
 		{
 			sizeOfData += netIdTemp.length(); 
 		}
 
 		byte typeNetIdCombo;
-		byte[] payloadBytes = payload.getBytes();
+		byte[] payloadBytes = this.payload.getBytes();
 		int currPos;
 
-		if (netId.length == 1) 
+		if (this.netId.length == 1) 
 		{
 			typeNetIdCombo = 1;
 			currPos = 2;
@@ -91,22 +132,22 @@ public class PacketHelper
 			sizeOfData++;
 		}
 
-		data = new byte[sizeOfData];
+		this.data = new byte[sizeOfData];
 
-		data[0] = this.type;
-		data[1] = typeNetIdCombo;
-		data[2] = (currPos == 3 ? (byte) netId.length : (byte) netId[0].length());
+		this.data[0] = this.type;
+		this.data[1] = typeNetIdCombo;
+		this.data[2] = (currPos == 3 ? (byte) this.netId.length : (byte) this.netId[0].length());
 
-		for (int i = 0; i < netId.length; i++) 
+		for (int i = 0; i < this.netId.length; i++) 
 		{
-			byte[] temp = netId[i].getBytes();
-			data[currPos++] = (byte) temp.length;
-			System.arraycopy(temp, 0, data, currPos, temp.length);
+			byte[] temp = this.netId[i].getBytes();
+			this.data[currPos++] = (byte) temp.length;
+			System.arraycopy(temp, 0, this.data, currPos, temp.length);
 			currPos += temp.length;
 		}
 
-		data[currPos++] = (byte) payloadBytes.length;
-		System.arraycopy(payloadBytes, 0, data, currPos, payloadBytes.length);
+		this.data[currPos++] = (byte) payloadBytes.length;
+		System.arraycopy(payloadBytes, 0, this.data, currPos, payloadBytes.length);
 
 	}
 
@@ -116,101 +157,151 @@ public class PacketHelper
 	 * @return void
 	 * 
 	 * @implNote The breakdown of the bytes for the Router packet is as follows:
-	 * 		     [0] - type of packet (1 = Router, 2 = Endpoint, 3 = ack, 4 = Controller)
-	 * 			 [1] - type (network id = 1, combination = 2)
-	 * 			 [2] - length of net id || number of net ids to follow
-	 * 			 [3, a || 3] - net id || length of net id 1
-	 * 			 [N/A || 4, a] - N/A || net id 1
-	 * 		     ... more length of net ids and net id values
-	 * 			 [...] - payload length
-	 * 			 [... + 1] - payload
+	 * 			 <ul>
+	 * 			 <li>if there is no combination in the net id:</li>
+	 * 			 <li>[0] - type of packet (1 = Router, 2 = Endpoint, 3 = Ack, 4 = Controller)</li>
+	 * 			 <li>[1] - type (network id = 1, combination = 2, next hop = 3)</li>
+	 * 			 <li>[2] - length of net id</li>
+	 * 			 <li>[3, a]- net id</li>
+	 * 			 <li>[a+1] - payload length</li>
+	 * 			 <li>[a+2, b] - payload</li>
+	 * 			 </ul>
+	 * 
+	 * 			 <ul>
+	 * 			 <li>if there is combination in the net id:</li>
+	 * 			 <li>[0] - type of packet (1 = Router, 2 = Endpoint, 3 = Ack, 4 = Controller)</li>
+	 * 			 <li>[1] - type (network id = 1, combination = 2, next hop = 3)</li>
+	 * 			 <li>[2] - number of net ids to follow</li>
+	 * 			 <li>[3] - length of net id 1</li>
+	 * 			 <li>[4, a] - net id 1</li>
+	 * 		     <li>... more length of net ids and net id values</li>
+	 * 			 <li>[...] - payload length</li>
+	 * 			 <li>[... + 1, b] - payload</li>
+	 * 			 </ul>
 	 * 
 	 */
 	public void decodeRouterOrEndpointPacket() 
 	{
 		int numOfNetIds = 1;
 		int currPos = 2;
-		if (data[1] == 0x2) 
+		if (this.data[1] == 0x2) 
 		{
-			numOfNetIds = data[currPos];
+			numOfNetIds = this.data[currPos];
 			currPos = 3;
 		}
 
-		netId = new String[numOfNetIds];
+		this.netId = new String[numOfNetIds];
 		
 		for (int i = 0; i < numOfNetIds; i++) 
 		{
-			int lengthNetId = data[currPos++];
+			int lengthNetId = this.data[currPos++];
 			byte[] temp = new byte[lengthNetId];
-			System.arraycopy(data, currPos, temp, 0, lengthNetId);
+			System.arraycopy(this.data, currPos, temp, 0, lengthNetId);
 			currPos += lengthNetId;
-			netId[i] = new String(temp);
+			this.netId[i] = new String(temp);
 		}
 
-		netIdString = String.join(".", netId);
+		this.netIdString = String.join(".", this.netId);
 
-		int payloadLength = data[currPos++];
+		int payloadLength = this.data[currPos++];
 
 		byte[] temp = new byte[payloadLength];
 
-		System.arraycopy(data, currPos, temp, 0, payloadLength);
+		System.arraycopy(this.data, currPos, temp, 0, payloadLength);
 
-		payload = new String(temp);
+		this.payload = new String(temp);
 
 	}
 
-	public void createAck()
+	/**
+	 * @params void
+	 * 
+	 * @return void
+	 * 
+	 * @implNote The breakdown of the bytes for the Router packet is as follows:
+	 * 			 <ul>
+	 * 			 <li>if there is no combination in the net id:</li>
+	 * 			 <li>[0] - type of packet (1 = Router, 2 = Endpoint, 3 = Ack, 4 = Controller)</li>
+	 * 			 <li>[1] - type (network id = 1, combination = 2, next hop = 3)</li>
+	 * 			 <li>[2] - length of net id</li>
+	 * 			 <li>[3, a]- net id</li>
+	 * 			 <li>[a+1] - payload length</li>
+	 * 			 <li>[a+2, b] - payload</li>
+	 * 			 </ul>
+	 * 
+	 * 			 <ul>
+	 * 			 <li>if there is combination in the net id:</li>
+	 * 			 <li>[0] - type of packet (1 = Router, 2 = Endpoint, 3 = Ack, 4 = Controller)</li>
+	 * 			 <li>[1] - type (network id = 1, combination = 2, next hop = 3)</li>
+	 * 			 <li>[2] - number of net ids to follow</li>
+	 * 			 <li>[3] - length of net id 1</li>
+	 * 			 <li>[4, a] - net id 1</li>
+	 * 		     <li>... more length of net ids and net id values</li>
+	 * 			 <li>[...] - payload length</li>
+	 * 			 <li>[... + 1, b] - payload</li>
+	 * 			 </ul>
+	 * 
+	 */
+	public void decodeRouterControllerpacket()
 	{
-		data = new byte[2];
-		data[0] = 0x3;
-		data[1] = this.type;
+		int numOfNetIds = 1;
+		int currPos = 2;
+		if (this.data[1] == 0x2) 
+		{
+			numOfNetIds = this.data[currPos];
+			currPos = 3;
+		}
 	}
 
-	public byte getType() {
-		return type;
-	}
-
-	public void setType(byte type) {
-		this.type = type;
-	}
-
-	public byte[] getData() 
+	
+	public void createControllerPacket()
 	{
-		return data;
+		int sizeOfData = 2 + this.nextHop.length() + 1 + this.netId.length;
+
+		for (String netIdTemp : this.netId)
+		{
+			sizeOfData += netIdTemp.length(); 
+		}
+
+		byte typeNetIdCombo;
+		int currPos;
+
+		if (this.netId.length == 1) 
+		{
+			typeNetIdCombo = 1;
+			currPos = 2;
+		}
+		else 
+		{
+			currPos = 3;
+			typeNetIdCombo = 2;
+			sizeOfData++;
+		}
+
+		this.data = new byte[sizeOfData];
+
+		this.data[0] = this.type;
+		this.data[1] = typeNetIdCombo;
+		this.data[2] = (currPos == 3 ? (byte) this.netId.length : (byte) this.netId[0].length());
+
+		for (int i = 0; i < this.netId.length; i++) 
+		{
+			byte[] temp = this.netId[i].getBytes();
+			this.data[currPos++] = (byte) temp.length;
+			System.arraycopy(temp, 0, this.data, currPos, temp.length);
+			currPos += temp.length;
+		}
+
+		this.data[currPos++] = 0x3; // next hop type
+		this.data[currPos++] = (byte) this.nextHop.getBytes().length; // next hop length
+		System.arraycopy(this.nextHop.getBytes(), 0, this.data, currPos, this.nextHop.getBytes().length); // next hop value
 	}
 
-	public void setData(byte[] data) 
+	public byte[] createAck()
 	{
-		this.data = data;
-	}
-
-	public String[] getNetId() 
-	{
-		return netId;
-	}
-
-	public void setNetId(String[] netId) 
-	{
-		this.netId = netId;
-	}
-
-	public String getNetIdString() 
-	{
-		return netIdString;
-	}
-
-	public void setNetIdString(String netIdString) 
-	{
-		this.netIdString = netIdString;
-	}
-
-	public String getPayload() 
-	{
-		return payload;
-	}
-
-	public void setPayload(String payload) 
-	{
-		this.payload = payload;
+		byte[] pack = new byte[2];
+		pack[0] = (byte) 3;
+		pack[1] = (byte) this.type;
+		return pack;
 	}
 }

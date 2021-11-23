@@ -4,6 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import Protocol.EndpointPacketData;
 import Protocol.PacketHelper;
 
 public class ApplicationTest implements Runnable
@@ -21,8 +22,7 @@ public class ApplicationTest implements Runnable
 	public void run()
 	{
 		// send a packet to the other endpoint
-		PacketHelper packetHelper = new PacketHelper("tcd.scss", "payload from sendingEndpoint", (byte) 0x3);
-		packetHelper.createRouterOrEndpointPacket();
+		EndpointPacketData packData = new EndpointPacketData("tcd.scss", "payload message");
 		int attemptsToSend = 1;
 		try
 		{
@@ -30,9 +30,9 @@ public class ApplicationTest implements Runnable
 			DatagramPacket packet = null;
 			while (attemptsToSend < 3)
 			{
-				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, InetAddress.getLocalHost(), localRouterPort);
+				packet = new DatagramPacket(packData.getData(), packData.getData().length, InetAddress.getLocalHost(), localRouterPort);
 				socket.send(packet);
-				System.out.println("endpoint sender application forwarding the packet to: " + localRouterPort + "\n    netId: " + packetHelper.getNetIdString());
+				System.out.println("endpoint sender application forwarding the packet to: " + localRouterPort + "\n    netId: " + packData.getNetIdString());
 				byte[] buffer = new byte[1500];
 				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 				try 

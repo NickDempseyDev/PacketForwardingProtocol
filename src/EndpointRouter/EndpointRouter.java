@@ -8,10 +8,10 @@ public class EndpointRouter implements Runnable
 {
 	int listeningPort = 51510;
 	String routerName;
-	InetAddress myIp;
-	InetAddress nextRouter;
+	String myIp;
+	String nextRouter;
 
-	public EndpointRouter(String routerName, InetAddress myIp, InetAddress nextRouter)
+	public EndpointRouter(String routerName, String myIp, String nextRouter)
 	{
 		this.routerName = routerName;
 		this.myIp = myIp;
@@ -22,9 +22,9 @@ public class EndpointRouter implements Runnable
 	{
 		try
 		{
-			System.out.println("MY IP IS: " + myIp.getHostAddress());
+			System.out.println("MY IP IS: " + InetAddress.getByName(myIp));
 			boolean tempBool = true;
-			DatagramSocket socket = new DatagramSocket(listeningPort, myIp);
+			DatagramSocket socket = new DatagramSocket(listeningPort, InetAddress.getByName(myIp));
 			while (tempBool)
 			{
 				byte[] buffer = new byte[1500];

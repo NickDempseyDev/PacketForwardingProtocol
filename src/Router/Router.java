@@ -5,17 +5,15 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.HashMap;
 
-import Protocol.PacketHelper;
-
 public class Router
 {
 	int listeningPort = 51510;
 	String routerName;
 	InetAddress myIp;
 
-	HashMap<String, InetAddress> routingTable = new HashMap<String, InetAddress>();
+	HashMap<String, String> routingTable = new HashMap<String, String>();
 
-	public Router(String routerName, HashMap<String, InetAddress> existingRoutingTable, InetAddress myIp)
+	public Router(String routerName, HashMap<String, String> existingRoutingTable, InetAddress myIp)
 	{
 		this.routerName = routerName;
 		this.routingTable = existingRoutingTable;

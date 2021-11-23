@@ -18,9 +18,10 @@ public class Router2 {
 			// 		System.out.println("    " + allMyIps[i]);
     		// 	}
   			// }
-			HashMap<String, InetAddress> existingRoutingTable = new HashMap<String, InetAddress>();
-			existingRoutingTable.put("tcd.scss", InetAddress.getByName("172.20.44.2"));
-			Router router = new Router("router2", existingRoutingTable, InetAddress.getByName("172.20.44.3"));
+			HashMap<String, String> existingRoutingTable = new HashMap<String, String>();
+			existingRoutingTable.put("tcd.scss", "endpointreceiver");
+			//getByName("172.20.44.3")
+			Router router = new Router("router2", existingRoutingTable, InetAddress.getLocalHost());
 			router.start();
 		}
 		catch (Exception e)

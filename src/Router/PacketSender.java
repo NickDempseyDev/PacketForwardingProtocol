@@ -4,56 +4,62 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import Protocol.PacketHelper;
+import Protocol.RouterPacketData;
 
 public class PacketSender implements Runnable
 {
-	
-	PacketHelper packetHelper;
-	InetAddress toIp;
+	InetAddress fromIp;
+	int fromPort;
+	byte[] data;
+	String toIp;
 	int toPort;
+	String netIdString;
 
-	public PacketSender(PacketHelper packetHelper, InetAddress toIp, int toPort)
+	public PacketSender(byte[] data, String toIp, int toPort, String netIdString, int fromPort, InetAddress fromIp)
 	{
-		this.packetHelper = packetHelper;
+		this.data = data;
 		this.toIp = toIp;
 		this.toPort = toPort;
+		this.fromIp = fromIp;
+		this.fromPort = fromPort;
+		this.netIdString = netIdString;
 	}
 
 	@Override
 	public void run()
 	{
-		packetHelper.createRouterOrEndpointPacket();
-		int attemptsToSend = 1;
+		boolean recv = true;
 		try
 		{
 			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket packet = null;
-			while (attemptsToSend < 3)
+			InetAddress ip = InetAddress.getByName(toIp);
+			packet = new DatagramPacket(data, data.length, ip, toPort);
+			socket.send(packet);
+			System.out.println("forwarding the packet to: " + toIp + "\n    netId: " + netIdString);
+			byte[] buffer = new byte[1500];
+			DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
+			try 
 			{
-				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, toIp, toPort);
-				socket.send(packet);
-				System.out.println("forwarding the packet to: " + toIp + "\n    netId: " + packetHelper.getNetIdString());
-				byte[] buffer = new byte[1500];
-				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
-				try 
-				{
-					socket.setSoTimeout(500);
-					socket.receive(recvPacket);
-					attemptsToSend = 99;
-					
-				} 
-				catch (Exception e) 
-				{
-					attemptsToSend++;
-				}
+				socket.setSoTimeout(500);
+				socket.receive(recvPacket);	
+			} 
+			catch (Exception e) 
+			{
+				recv = false;
 			}
-			if (attemptsToSend == 3) 
+			if (recv) 
 			{
-				System.out.println("failed to send to " + toIp + " after " + attemptsToSend + " attempts at sending");
+				System.out.println("received acknowledgement packet from: " + packet.getAddress() + " forwarding it to: " + fromIp);
+				byte[] ackData = new byte[recvPacket.getData().length];
+				System.arraycopy(recvPacket.getData(), 0, ackData, 0, recvPacket.getData().length);
+				ackData[0] = (byte) 1;
+				DatagramPacket forwardAck = new DatagramPacket(ackData, ackData.length, fromIp, fromPort);
+				socket.send(forwardAck);
 			}
 			else
 			{
-				System.out.println("received acknowledgement packet from: " + packet.getAddress());
+				System.out.println("failed to send to " + toIp + " - never received acknowledgement");
 			}
 			socket.close();
 		} 

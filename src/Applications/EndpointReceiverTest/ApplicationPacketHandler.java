@@ -4,7 +4,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import Protocol.EndpointPacketData;
 import Protocol.PacketHelper;
+import Protocol.RouterPacketData;
 
 public class ApplicationPacketHandler implements Runnable
 {
@@ -22,15 +24,14 @@ public class ApplicationPacketHandler implements Runnable
 	@Override
 	public void run()
 	{
-		PacketHelper packetHelper = new PacketHelper(data, data[0]);
-		packetHelper.decodeRouterOrEndpointPacket();
+		EndpointPacketData pack = new EndpointPacketData(data);
 		
 		try 
 		{
-			packetHelper.createAck();
+			byte[] ack = pack.createAck();
 			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, ip, port);
-			System.out.println("received forwarded packet from: " + port + "\n    netId: " + packetHelper.getNetIdString() + "\n    payload: " + packetHelper.getPayload());
+			DatagramPacket packet = new DatagramPacket(ack, ack.length, ip, port);
+			System.out.println("received forwarded packet from: " + port + "\n    netId: " + pack.getNetIdString() + "\n    payload: " + pack.getPayload());
 			socket.send(packet);
 			socket.close();
 		} 

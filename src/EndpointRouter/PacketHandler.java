@@ -3,20 +3,18 @@ package EndpointRouter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-
-import Protocol.PacketHelper;
+import Protocol.RouterPacketData;
 
 public class PacketHandler implements Runnable
 {
 
 	byte[] data;
-	PacketHelper packetHelper;
 	int fromPort;
 	InetAddress fromIp;
-	InetAddress nextIp;
+	String nextIp;
 	int nextPort;
-
-	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, InetAddress nextIp, int nextPort)
+	
+	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, String nextIp, int nextPort)
 	{
 		this.data = data;
 		this.fromIp = fromIp;
@@ -27,7 +25,6 @@ public class PacketHandler implements Runnable
 
 	public void send(String from)
 	{
-		packetHelper.createRouterOrEndpointPacket();
 		int attemptsToSend = 0;
 		try
 		{
@@ -35,9 +32,9 @@ public class PacketHandler implements Runnable
 			DatagramPacket packet = null;
 			while (attemptsToSend < 3)
 			{
-				packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, nextIp, nextPort);
+				packet = new DatagramPacket(data, data.length, InetAddress.getByName(nextIp), nextPort);
 				socket.send(packet);
-				System.out.println("forwarding the packet to a: " + from + "\n    PORT: " + nextPort + "\n    netId: " + packetHelper.getNetIdString());
+				System.out.println("forwarding the packet to a: " + from + "\n    PORT: " + nextPort);
 				byte[] buffer = new byte[1500];
 				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 				try
@@ -70,30 +67,31 @@ public class PacketHandler implements Runnable
 
 	public void forwardPacket(String from)
 	{
-		packetHelper.setType((byte) 0x1);
-		packetHelper.createRouterOrEndpointPacket();
+		this.data[0] = (byte) 1;
 		send(from);
 	}
 	
 	@Override
 	public void run()
 	{
-		this.packetHelper = new PacketHelper(data, data[0]);
-		packetHelper.decodeRouterOrEndpointPacket();
 		String from = "Router";
-		if (data[0] == (byte) 0x3)
+		if (data[0] == (byte) 0x2)
 		{
 			from = new String("Endpoint");
 		}
-		System.out.println("received forwarded packet from a: " + from + "\n    IP: " + fromIp + "\n    netId: " + packetHelper.getNetIdString());
+		System.out.println("received forwarded packet from a: " + from + "\n    IP: " + fromIp);
 		
 		try 
 		{
-			packetHelper.createAck();
-			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(packetHelper.getData(), packetHelper.getData().length, fromIp, fromPort);
-			socket.send(packet);
-			socket.close();
+			if (from.equalsIgnoreCase("Router"))
+			{
+				RouterPacketData pack = new RouterPacketData(data);
+				byte[] ackRes = pack.createAck();
+				DatagramSocket socket = new DatagramSocket();
+				DatagramPacket packet = new DatagramPacket(ackRes, ackRes.length, fromIp, fromPort);
+				socket.send(packet);
+				socket.close();
+			}
 			forwardPacket(from);
 		} 
 		catch (Exception e) 
