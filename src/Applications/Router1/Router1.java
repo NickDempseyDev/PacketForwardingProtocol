@@ -22,7 +22,7 @@ public class Router1
   			// }
 			HashMap<String, String> existingRoutingTable = new HashMap<String, String>();
 			existingRoutingTable.put("tcd.scss", "router2");
-			Router router = new Router("router1", existingRoutingTable, InetAddress.getByName("172.20.11.3"));
+			Router router = new Router("router1", existingRoutingTable, InetAddress.getByName("router1"));
 			router.start();
 		} 
 		catch (Exception e) 

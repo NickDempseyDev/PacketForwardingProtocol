@@ -18,48 +18,28 @@ public class ApplicationTest implements Runnable
 		this.localRouterPort = 51510;
 	}
 
-	@Override
-	public void run()
+	public void sendPacket()
 	{
 		// send a packet to the other endpoint
 		EndpointPacketData packData = new EndpointPacketData("tcd.scss", "payload message");
-		int attemptsToSend = 1;
 		try
 		{
 			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket packet = null;
-			while (attemptsToSend < 3)
-			{
-				packet = new DatagramPacket(packData.getData(), packData.getData().length, InetAddress.getLocalHost(), localRouterPort);
-				socket.send(packet);
-				System.out.println("endpoint sender application forwarding the packet to: " + localRouterPort + "\n    netId: " + packData.getNetIdString());
-				byte[] buffer = new byte[1500];
-				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
-				try 
-				{
-					socket.setSoTimeout(500);
-					socket.receive(recvPacket);
-					attemptsToSend = 99;
-					
-				} 
-				catch (Exception e)
-				{
-					attemptsToSend++;
-				}
-			}
-			if (attemptsToSend == 3) 
-			{
-				System.out.println("failed to send to " + localRouterPort + " after " + attemptsToSend + " attempts at sending");
-			}
-			else
-			{
-				System.out.println("received acknowledgement packet from: " + packet.getPort());
-			}
+			packet = new DatagramPacket(packData.getData(), packData.getData().length, InetAddress.getLocalHost(), localRouterPort);
+			System.out.println("endpoint sender application forwarding the packet to: " + localRouterPort + "\n    netId: " + packData.getNetIdString() + "\n    payload: " + packData.getPayload());
+			socket.send(packet);
 			socket.close();
 		} 
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void run()
+	{
+		sendPacket();
 	}
 }

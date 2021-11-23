@@ -3,6 +3,8 @@ package EndpointRouter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+
+import Protocol.EndpointPacketData;
 import Protocol.RouterPacketData;
 
 public class PacketHandler implements Runnable
@@ -11,30 +13,49 @@ public class PacketHandler implements Runnable
 	byte[] data;
 	int fromPort;
 	InetAddress fromIp;
-	String nextIp;
+	String nextRouter;
+	String localApplication;
 	int nextPort;
 	
-	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, String nextIp, int nextPort)
+	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, String nextRouter, int nextPort)
 	{
 		this.data = data;
 		this.fromIp = fromIp;
 		this.fromPort = fromPort;
-		this.nextIp = nextIp;
+		this.nextRouter = nextRouter;
 		this.nextPort = nextPort;
+		this.localApplication = "localhost";
 	}
 
-	public void send(String from)
+	public void forwardToApplication(RouterPacketData rPack)
 	{
+		EndpointPacketData newEPack = new EndpointPacketData(rPack.getNetIdString(), rPack.getPayload());
+		try
+		{
+			DatagramSocket socket = new DatagramSocket();
+			DatagramPacket packet = new DatagramPacket(newEPack.getData(), newEPack.getData().length, InetAddress.getByName(localApplication), nextPort);
+			System.out.println("forwarding the packet to the application");
+			socket.send(packet);
+			socket.close();
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void forwardToRouter(EndpointPacketData ePack)
+	{
+		RouterPacketData newRPack = new RouterPacketData(ePack.getNetIdString(), ePack.getPayload());
 		int attemptsToSend = 0;
 		try
 		{
 			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = null;
+			DatagramPacket packet = new DatagramPacket(newRPack.getData(), newRPack.getData().length, InetAddress.getByName(nextRouter), nextPort);
 			while (attemptsToSend < 3)
 			{
-				packet = new DatagramPacket(data, data.length, InetAddress.getByName(nextIp), nextPort);
 				socket.send(packet);
-				System.out.println("forwarding the packet to a: " + from + "\n    PORT: " + nextPort);
+				System.out.println("forwarding the packet to: " + nextRouter + "\n    PORT: " + nextPort);
 				byte[] buffer = new byte[1500];
 				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 				try
@@ -51,7 +72,7 @@ public class PacketHandler implements Runnable
 			}
 			if (attemptsToSend == 3) 
 			{
-				System.out.println("failed to send to a: " + from + "\n    PORT: " + nextPort + "\n    after " + attemptsToSend + " attempts at sending");
+				System.out.println("failed to send to: " + nextRouter + "\n    PORT: " + nextPort + "\n    after " + attemptsToSend + " attempts at sending");
 			}
 			else
 			{
@@ -64,39 +85,52 @@ public class PacketHandler implements Runnable
 			e.printStackTrace();
 		}
 	}
-
-	public void forwardPacket(String from)
-	{
-		this.data[0] = (byte) 1;
-		send(from);
-	}
 	
-	@Override
-	public void run()
+	public void sendAck(byte[] ack)
 	{
-		String from = "Router";
-		if (data[0] == (byte) 0x2)
+		try
 		{
-			from = new String("Endpoint");
-		}
-		System.out.println("received forwarded packet from a: " + from + "\n    IP: " + fromIp);
-		
-		try 
-		{
-			if (from.equalsIgnoreCase("Router"))
-			{
-				RouterPacketData pack = new RouterPacketData(data);
-				byte[] ackRes = pack.createAck();
-				DatagramSocket socket = new DatagramSocket();
-				DatagramPacket packet = new DatagramPacket(ackRes, ackRes.length, fromIp, fromPort);
-				socket.send(packet);
-				socket.close();
-			}
-			forwardPacket(from);
+			DatagramSocket socket = new DatagramSocket();
+			DatagramPacket packet = new DatagramPacket(ack, ack.length, fromIp, fromPort);
+			socket.send(packet);
+			socket.close();
 		} 
 		catch (Exception e) 
 		{
 			e.printStackTrace();
-		}	
+		}
+	}
+	
+	@Override
+	public void run()
+	{		
+		if (data[0] == (byte) 1)
+		{
+			try 
+			{
+				RouterPacketData rPack = new RouterPacketData(data);
+				byte[] ackRes = rPack.createAck();
+				sendAck(ackRes);
+				forwardToApplication(rPack);
+			} 
+			catch (Exception e) 
+			{
+				e.printStackTrace();	
+			}
+		}
+		else
+		{
+			try
+			{
+				EndpointPacketData ePack = new EndpointPacketData(data);
+				byte[] ackRes = ePack.createAck();
+				sendAck(ackRes);
+				forwardToRouter(ePack);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 }

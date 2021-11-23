@@ -25,19 +25,18 @@ public class ApplicationPacketHandler implements Runnable
 	public void run()
 	{
 		EndpointPacketData pack = new EndpointPacketData(data);
-		
-		try 
-		{
-			byte[] ack = pack.createAck();
-			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(ack, ack.length, ip, port);
-			System.out.println("received forwarded packet from: " + port + "\n    netId: " + pack.getNetIdString() + "\n    payload: " + pack.getPayload());
-			socket.send(packet);
-			socket.close();
-		} 
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-		}
+		System.out.println("received forwarded packet from: " + port + "\n    netId: " + pack.getNetIdString() + "\n    payload: " + pack.getPayload());
+		// try 
+		// {
+		// 	byte[] ack = pack.createAck();
+		// 	DatagramSocket socket = new DatagramSocket();
+		// 	DatagramPacket packet = new DatagramPacket(ack, ack.length, ip, port);
+		// 	socket.send(packet);
+		// 	socket.close();
+		// } 
+		// catch (Exception e) 
+		// {
+		// 	e.printStackTrace();
+		// }
 	}	
 }
