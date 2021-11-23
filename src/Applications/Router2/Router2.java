@@ -19,7 +19,7 @@ public class Router2 {
     		// 	}
   			// }
 			HashMap<String, String> existingRoutingTable = new HashMap<String, String>();
-			existingRoutingTable.put("tcd.scss", "172.20.44.2");
+			existingRoutingTable.put("tcd.scss", "endpointreceiver");
 			//getByName("172.20.44.3")
 			Router router = new Router("router2", existingRoutingTable, InetAddress.getLocalHost());
 			router.start();

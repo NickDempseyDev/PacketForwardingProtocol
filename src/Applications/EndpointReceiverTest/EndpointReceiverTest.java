@@ -19,7 +19,7 @@ public class EndpointReceiverTest
 			// 		System.out.println("    " + allMyIps[i]);
     		// 	}
   			// }
-			EndpointRouter router = new EndpointRouter("EndpointRouterReceiver", "localhost", "localhost");
+			EndpointRouter router = new EndpointRouter("EndpointRouterReceiver", "endpointreceiver", "localhost");
 			ApplicationTest application = new ApplicationTest(InetAddress.getLocalHost());
 			Thread tRouter = new Thread(router);
 			Thread tApplication = new Thread(application);
