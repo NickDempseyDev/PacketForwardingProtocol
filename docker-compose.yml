@@ -26,6 +26,7 @@ networks:
 #     name: network2
         
 services:
+
   router1:
     container_name: router1
     build: 
@@ -40,6 +41,7 @@ services:
       PORT_R: tester123
     depends_on:
       - router2
+
   router2:
     container_name: router2
     build: 
@@ -50,10 +52,21 @@ services:
     networks:
       - network2
       - network3
-    environment: 
-      PORT_R: tester123
     depends_on:
       - endpointreceiver
+
+  router3:
+    container_name: router3
+    build: 
+      context: ./src/Applications
+      dockerfile: ./Router3/Dockerfile
+    volumes: 
+      - .:/dev/cs33031
+    networks:
+      - network1
+    depends_on:
+      - endpointreceiver
+
   endpointsender:
     container_name: endpointsender
     build: 
@@ -63,10 +76,9 @@ services:
       - .:/dev/cs33031
     networks:
       - network1
-    environment: 
-      PORT_R: tester123
     depends_on:
       - router1
+
   endpointreceiver:
     container_name: endpointreceiver
     build: 
@@ -78,8 +90,7 @@ services:
       - network3
     depends_on:
       - controller
-    environment: 
-      PORT_R: tester123
+
   controller:
     container_name: controller
     build: 

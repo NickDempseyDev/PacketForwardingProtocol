@@ -8,6 +8,10 @@ router2:
 	javac Applications/Router2/Router2.java -d ../bin
 	java -cp ../bin Applications.Router2.Router2
 
+router3:
+	javac Applications/Router3/Router3.java -d ../bin
+	java -cp ../bin Applications.Router3.Router3
+
 endpointSender:
 	javac Applications/EndpointSenderTest/EndpointSenderTest.java -d ../bin
 	java -cp ../bin Applications.EndpointSenderTest.EndpointSenderTest

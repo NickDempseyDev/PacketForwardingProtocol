@@ -89,20 +89,13 @@ public class PacketHandler implements Runnable
 	@Override
 	public void run()
 	{
-		System.out.print("ROUTER PACK HANDLER AND RECEIVED A ... ");
-		// for (int i = 0; i < data.length; i++) {
-		// 	System.out.print((byte)data[i]);
-		// }
-		// System.out.println();
 		if (data[0] == 0x1 /* Received a router packet */)
 		{
-			System.out.println(" ROUTER PACKET");
 			RouterPacketData routerPacket = new RouterPacketData(data);
 			forwardPacket(data, routerPacket.getNetIdString());
 		}
 		else if (data[0] == 0x2 /* Received an endpoint packet */)
 		{
-			System.out.println(" ENDPOINT PACKET");
 			EndpointPacketData endpointPacket = new EndpointPacketData(data);
 			endpointPacket.setType((byte) 0x1);
 			endpointPacket.createPacket();
@@ -110,7 +103,6 @@ public class PacketHandler implements Runnable
 		}
 		else if (data[0] == 0x4 || data[0] == 0x5 /* Received a controller packet */)
 		{
-			System.out.println(" CONTROLLER PACKET WITH DATA[0] = " + data[0]);
 			ControllerPacketData controllerPacket = new ControllerPacketData(data);
 			System.out.println("netID from controller: " + controllerPacket.getNetIdString() + " and next hop from controller: " + controllerPacket.getNextHop());
 			updateRoutingTable(controllerPacket.getNetIdString(), controllerPacket.getNextHop());

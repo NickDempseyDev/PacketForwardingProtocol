@@ -40,7 +40,6 @@ public class Controller
 					tempMap.put(splitLine[1], splitLine[0]);
 				}
 				map.put(router, tempMap);
-				System.out.println(tempMap);
 				router = scanner.nextLine();
 			}
 
@@ -62,7 +61,6 @@ public class Controller
 			DatagramSocket socket = new DatagramSocket(51510, InetAddress.getByName(myIp));
 			while (forever)
 			{
-				System.out.println("here in Controller.java");
 				byte[] buf = new byte[1500];
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);

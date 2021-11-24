@@ -53,6 +53,7 @@ public class PacketHandler implements Runnable
 		{
 			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket packet = new DatagramPacket(dataN.getData(), dataN.getData().length, InetAddress.getByName(fromIp), fromPort);
+			System.out.println("Sending " + fromIp + " their next hop: " + nextHopIp);
 			socket.send(packet);
 			socket.close();
 		} 
