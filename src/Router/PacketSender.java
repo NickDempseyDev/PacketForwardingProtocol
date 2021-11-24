@@ -35,13 +35,13 @@ public class PacketSender implements Runnable
 			DatagramPacket packet = null;
 			InetAddress ip = InetAddress.getByName(toIp);
 			packet = new DatagramPacket(data, data.length, ip, toPort);
-			socket.send(packet);
 			System.out.println("forwarding the packet to: " + toIp + "\n    netId: " + netIdString);
+			socket.send(packet);
 			byte[] buffer = new byte[1500];
 			DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 			try 
 			{
-				socket.setSoTimeout(500);
+				socket.setSoTimeout(3000);
 				socket.receive(recvPacket);	
 			} 
 			catch (Exception e) 

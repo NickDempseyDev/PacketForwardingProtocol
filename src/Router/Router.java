@@ -13,10 +13,9 @@ public class Router
 
 	HashMap<String, String> routingTable = new HashMap<String, String>();
 
-	public Router(String routerName, HashMap<String, String> existingRoutingTable, InetAddress myIp)
+	public Router(String routerName, InetAddress myIp)
 	{
 		this.routerName = routerName;
-		this.routingTable = existingRoutingTable;
 		this.myIp = myIp;
 	}
 
@@ -47,10 +46,10 @@ public class Router
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
 				
-				byte[] data = new byte[packet.getData().length];
-				System.arraycopy(buffer, 0, data, 0, data.length);
+				byte[] dataN = new byte[packet.getLength()];
+				System.arraycopy(buffer, 0, dataN, 0, dataN.length);
 
-				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), routingTable);
+				PacketHandler packetHandler = new PacketHandler(dataN, packet.getAddress(), packet.getPort(), routingTable, routerName);
 				Thread t = new Thread(packetHandler);
 				t.start();
 			}

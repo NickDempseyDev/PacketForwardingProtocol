@@ -15,3 +15,7 @@ endpointSender:
 endpointReceiver:
 	javac Applications/EndpointReceiverTest/EndpointReceiverTest.java -d ../bin
 	java -cp ../bin Applications.EndpointReceiverTest.EndpointReceiverTest
+
+controller1:
+	javac Applications/ControllerTest/ControllerTest.java -d ../bin
+	java -cp ../bin Applications.ControllerTest.ControllerTest

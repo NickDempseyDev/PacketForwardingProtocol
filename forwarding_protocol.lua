@@ -15,7 +15,8 @@ function get_packet_name(type)
       if type ==    1 then type_name = "ROUTER"
   elseif type ==    2 then type_name = "ENDPOINT"
   elseif type ==    3 then type_name = "ACK"
-  elseif type ==    4 then type_name = "CONTROLLER" end
+  elseif type ==    4 then type_name = "CONTROLLER REQUEST" 
+  elseif type ==    5 then type_name = "CONTROLLER RESPONSE" end
   return type_name
 end
 
@@ -24,7 +25,8 @@ function get_type(type)
       if type ==    1 then type_status = "NET ID"
   elseif type ==    2 then type_status = "COMBINATION"
   elseif type ==    3 then type_status = "NEXT HOP"
-  elseif type ==    4 then type_status = "PAYLOAD" end
+  elseif type ==    4 then type_status = "PAYLOAD" 
+  elseif type ==    5 then type_status = "FROM IP" end
   return type_status
 end
 

@@ -20,9 +20,7 @@ public class Router1
 			// 		System.out.println("    " + allMyIps[i]);
     		// 	}
   			// }
-			HashMap<String, String> existingRoutingTable = new HashMap<String, String>();
-			existingRoutingTable.put("tcd.scss", "router2");
-			Router router = new Router("router1", existingRoutingTable, InetAddress.getByName("router1"));
+			Router router = new Router("router1", InetAddress.getByName("router1"));
 			router.start();
 		} 
 		catch (Exception e) 

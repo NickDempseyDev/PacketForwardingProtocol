@@ -54,13 +54,13 @@ public class PacketHandler implements Runnable
 			DatagramPacket packet = new DatagramPacket(newRPack.getData(), newRPack.getData().length, InetAddress.getByName(nextRouter), nextPort);
 			while (attemptsToSend < 3)
 			{
-				socket.send(packet);
 				System.out.println("forwarding the packet to: " + nextRouter + "\n    PORT: " + nextPort);
+				socket.send(packet);
 				byte[] buffer = new byte[1500];
 				DatagramPacket recvPacket = new DatagramPacket(buffer, buffer.length);
 				try
 				{
-					socket.setSoTimeout(500);
+					socket.setSoTimeout(3000);
 					socket.receive(recvPacket);
 					attemptsToSend = 99;
 					

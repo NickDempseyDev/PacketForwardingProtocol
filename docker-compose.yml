@@ -76,8 +76,21 @@ services:
       - .:/dev/cs33031
     networks:
       - network3
+    depends_on:
+      - controller
     environment: 
       PORT_R: tester123
+  controller:
+    container_name: controller
+    build: 
+      context: ./src/Applications
+      dockerfile: ./ControllerTest/Dockerfile
+    volumes: 
+      - .:/dev/cs33031
+    networks:
+      - network1
+      - network2
+      - network3
 
   # wireshark:
   #   image: lscr.io/linuxserver/wireshark

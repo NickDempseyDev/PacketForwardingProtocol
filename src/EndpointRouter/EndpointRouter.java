@@ -31,7 +31,7 @@ public class EndpointRouter implements Runnable
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
 				
-				byte[] data = new byte[packet.getData().length];
+				byte[] data = new byte[packet.getLength()];
 				System.arraycopy(buffer, 0, data, 0, data.length);
 				int nextPort;
 				if (data[0] == (byte) 1)
