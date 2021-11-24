@@ -6,8 +6,11 @@ t_length_v = ProtoField.uint8("forwarding_protocol.t_length_v", "Length", base.D
 tl_value = ProtoField.string("forwarding_protocol.tl_value"     , "Value"    , base.ASCII)
 payload_length = ProtoField.uint8("forwarding_protocol.payload_length", "Payload Length", base.DEC)
 payload_content = ProtoField.string("forwarding_protocol.payload_content"     , "Payload"    , base.ASCII)
+next_hop = ProtoField.string("forwarding_protocol.next_hop"     , "Next Hop"    , base.ASCII)
+next_hop_l = ProtoField.uint8("forwarding_protocol.next_hop_t", "Next Hop Length", base.DEC)
+from_ip = ProtoField.string("forwarding_protocol.from_ip"     , "From IP"    , base.ASCII)
 
-forwarding_protocol.fields = { packet_type, type_lv, t_length_v, tl_value, payload_length, payload_content }
+forwarding_protocol.fields = { packet_type, type_lv, t_length_v, tl_value, payload_length, payload_content, next_hop, from_ip }
 
 
 function get_packet_name(type)
@@ -74,10 +77,26 @@ function forwarding_protocol.dissector(buffer, pinfo, tree)
     number_of_lvs = number_of_lvs - 1
     current_substree_number = current_substree_number + 1
   end
-  local payload_len = buffer(current_pos,1):le_uint()
-  subtree:add_le(payload_length,payload_len)
-  current_pos = current_pos + 1
-  subtree:add_le(payload_content, buffer(current_pos, payload_len))
+
+  -- insert if condition to check if its a controller pack or a router pack and build accordingly
+  if type == 4 or type == 5 then 
+    local subtree_local = subtree:add(forwarding_protocol, buffer(), "TLV")
+    local type = buffer(current_pos, 1):le_uint()
+    local type_text = get_type(type)
+    subtree_local:add_le(type_lv,type):append_text(" (" .. type_text .. ")")
+    current_pos = current_pos + 1
+    local lenghtL = buffer(current_pos, 1):le_uint()
+    subtree_local:add_le(t_length_v,lenghtL)
+    current_pos = current_pos + 1
+    local text = buffer(current_pos, lenghtL)
+    subtree_local:add_le(tl_value, text)
+  elseif type == 1 or type == 2 then 
+    local payload_len = buffer(current_pos,1):le_uint()
+    subtree:add_le(payload_length,payload_len)
+    current_pos = current_pos + 1
+    subtree:add_le(payload_content, buffer(current_pos, payload_len))
+  end
+
 end
 
 function all_ports(buffer, pinfo, tree)
