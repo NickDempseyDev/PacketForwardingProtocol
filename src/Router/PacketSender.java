@@ -52,7 +52,7 @@ public class PacketSender implements Runnable
 			{
 				System.out.println("received acknowledgement packet from: " + packet.getAddress() + " forwarding it to: " + fromIp);
 				byte[] ackData = new byte[recvPacket.getLength()];
-				System.arraycopy(recvPacket.getData(), 0, ackData, 0, recvPacket.getData().length);
+				System.arraycopy(recvPacket.getData(), 0, ackData, 0, recvPacket.getLength());
 				ackData[0] = (byte) 1;
 				DatagramPacket forwardAck = new DatagramPacket(ackData, ackData.length, fromIp, fromPort);
 				socket.send(forwardAck);
