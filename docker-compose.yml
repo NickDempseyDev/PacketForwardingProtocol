@@ -55,17 +55,17 @@ services:
     depends_on:
       - endpointreceiver
 
-  router3:
-    container_name: router3
-    build: 
-      context: ./src/Applications
-      dockerfile: ./Router3/Dockerfile
-    volumes: 
-      - .:/dev/cs33031
-    networks:
-      - network1
-    depends_on:
-      - endpointreceiver
+  # router3:
+  #   container_name: router3
+  #   build: 
+  #     context: ./src/Applications
+  #     dockerfile: ./Router3/Dockerfile
+  #   volumes: 
+  #     - .:/dev/cs33031
+  #   networks:
+  #     - network1
+  #   depends_on:
+  #     - endpointreceiver
 
   endpointsender:
     container_name: endpointsender

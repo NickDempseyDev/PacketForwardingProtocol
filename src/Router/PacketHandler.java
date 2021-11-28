@@ -4,11 +4,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.HashMap;
-
-import Protocol.ControllerPacketData;
-import Protocol.EndpointPacketData;
-import Protocol.PacketHelper;
-import Protocol.RouterPacketData;
+import Protocol.PacketDecoder;
+import Protocol.PacketGenerator;
+import Protocol.ProtocolTypes;
 
 public class PacketHandler implements Runnable
 {
@@ -18,38 +16,44 @@ public class PacketHandler implements Runnable
 	InetAddress fromIp;
 	HashMap<String, String> routingTable;
 	String routerName;
+	InetAddress[] routerIps;
+	PacketDecoder decoder = new PacketDecoder();
+	PacketGenerator generator = new PacketGenerator();
+	Boolean goodToGo = false;
 
-	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, HashMap<String, String> routingTable, String routerName)
+	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, HashMap<String, String> routingTable, String routerName, InetAddress[] routerIps, Boolean goodToGo)
 	{
 		this.data = data;
 		this.fromIp = fromIp;
 		this.fromPort = fromPort;
 		this.routingTable = routingTable;
 		this.routerName = routerName;
+		this.routerIps = routerIps;
+		this.goodToGo = goodToGo;
 	}
 
 	public boolean contactController(String netIdString)
 	{
-		ControllerPacketData packRequest = new ControllerPacketData(netIdString, "", routerName, (byte) 0x4);
+		byte[] data = generator.createControllerRequestPacket(netIdString, routerName, routerIps);
 		try
 		{
 			byte[] buffer = new byte[1500];
 			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(packRequest.getData(), packRequest.getData().length, InetAddress.getByName("controller"), 51510);
+			DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName("controller"), 51510);
 			socket.send(packet);
 			packet = new DatagramPacket(buffer, buffer.length);
 			socket.receive(packet);
 			socket.close();
 			byte[] dataRecv = new byte[packet.getData().length];
 			System.arraycopy(packet.getData(), 0, dataRecv, 0, packet.getData().length);
-			ControllerPacketData packResponse = new ControllerPacketData(dataRecv);
-			if (packResponse.getNextHop().equals("null"))
+			String nextHop = decoder.getTarget(ProtocolTypes.NEXT_HOP, data);
+			if (nextHop.equals("null"))
 			{
 				return false;
 			}
 			else
 			{
-				updateRoutingTable(packResponse.getNetIdString(), packResponse.getNextHop());
+				updateRoutingTable(netIdString, nextHop);
 				return true;
 			}
 		}
@@ -89,23 +93,34 @@ public class PacketHandler implements Runnable
 	@Override
 	public void run()
 	{
-		if (data[0] == 0x1 /* Received a router packet */)
+		if (data[0] == ProtocolTypes.ROUTER /* Received a router packet */)
 		{
-			RouterPacketData routerPacket = new RouterPacketData(data);
-			forwardPacket(data, routerPacket.getNetIdString());
+			while (!goodToGo) {}
+			String netIdString = decoder.getNetIdString(data);
+			forwardPacket(data, netIdString);
 		}
-		else if (data[0] == 0x2 /* Received an endpoint packet */)
+		else if (data[0] == ProtocolTypes.ENDPOINT /* Received an endpoint packet */)
 		{
-			EndpointPacketData endpointPacket = new EndpointPacketData(data);
-			endpointPacket.setType((byte) 0x1);
-			endpointPacket.createPacket();
-			forwardPacket(endpointPacket.getData(), endpointPacket.getNetIdString());
+			while (!goodToGo) {}
+			String netIdString = decoder.getNetIdString(data);
+			data[0] = ProtocolTypes.ROUTER;
+			forwardPacket(data, netIdString);
 		}
-		else if (data[0] == 0x4 || data[0] == 0x5 /* Received a controller packet */)
+		else if (/* data[0] == ProtocolTypes.CONTROLLER_REQUEST || */data[0] == ProtocolTypes.CONTROLLER_RESPONSE /* Received a controller packet */)
 		{
-			ControllerPacketData controllerPacket = new ControllerPacketData(data);
-			System.out.println("netID from controller: " + controllerPacket.getNetIdString() + " and next hop from controller: " + controllerPacket.getNextHop());
-			updateRoutingTable(controllerPacket.getNetIdString(), controllerPacket.getNextHop());
+			String netIdString = decoder.getNetIdString(data);
+			String nextHop = decoder.getTarget(ProtocolTypes.NEXT_HOP, data);
+			System.out.println("netID from controller: " + netIdString + " and next hop from controller: " + nextHop);
+			updateRoutingTable(netIdString, nextHop);
+		}
+		else if (data[0] == ProtocolTypes.GOOD_TO_GO)
+		{
+			String name = decoder.getTarget(ProtocolTypes.FROM_IP_STR, data);
+			if (name.equals(routerName))
+			{
+				goodToGo = true;
+				System.out.println("received good to go...");
+			}
 		}
 		else
 		{

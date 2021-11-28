@@ -1,8 +1,6 @@
 package Applications.ControllerTest;
 
-import java.net.InetAddress;
 import java.util.HashMap;
-
 import Controller.Controller;
 
 public class ControllerTest
@@ -11,7 +9,7 @@ public class ControllerTest
 	{
 		HashMap<String, String> netIdOwnershipTable = new HashMap<String, String>();
 		netIdOwnershipTable.put("tcd.scss", "endpointreceiver");
-		Controller controller = new Controller("./Applications/ControllerTest/paths.txt", netIdOwnershipTable, "controller");
+		Controller controller = new Controller(netIdOwnershipTable, 4);
 		controller.start();
 	}
 
@@ -19,7 +17,6 @@ public class ControllerTest
 	{
 		try 
 		{
-			System.out.println("MY IP IS " + InetAddress.getByName("controller"));
 			ControllerTest controllerTest = new ControllerTest();	
 		} 
 		catch (Exception e)

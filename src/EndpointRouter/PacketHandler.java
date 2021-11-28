@@ -3,9 +3,9 @@ package EndpointRouter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-
-import Protocol.EndpointPacketData;
-import Protocol.RouterPacketData;
+import Protocol.PacketDecoder;
+import Protocol.PacketGenerator;
+import Protocol.ProtocolTypes;
 
 public class PacketHandler implements Runnable
 {
@@ -16,8 +16,11 @@ public class PacketHandler implements Runnable
 	String nextRouter;
 	String localApplication;
 	int nextPort;
+	PacketDecoder decoder = new PacketDecoder();
+	PacketGenerator generator = new PacketGenerator();
+	Boolean goodToGo;
 	
-	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, String nextRouter, int nextPort)
+	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, String nextRouter, int nextPort, Boolean goodToGo)
 	{
 		this.data = data;
 		this.fromIp = fromIp;
@@ -25,15 +28,18 @@ public class PacketHandler implements Runnable
 		this.nextRouter = nextRouter;
 		this.nextPort = nextPort;
 		this.localApplication = "localhost";
+		this.goodToGo = goodToGo;
 	}
 
-	public void forwardToApplication(RouterPacketData rPack)
+	public void forwardToApplication()
 	{
-		EndpointPacketData newEPack = new EndpointPacketData(rPack.getNetIdString(), rPack.getPayload());
+		String netIdString = decoder.getNetIdString(data);
+		String payload = decoder.getTarget(ProtocolTypes.PAYLOAD, data);
+		byte[] dataToForward = generator.createRouterOrEndpointPacket(netIdString, payload, "endpoint");
 		try
 		{
 			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(newEPack.getData(), newEPack.getData().length, InetAddress.getByName(localApplication), nextPort);
+			DatagramPacket packet = new DatagramPacket(dataToForward, dataToForward.length, InetAddress.getByName(localApplication), nextPort);
 			System.out.println("forwarding the packet to the application");
 			socket.send(packet);
 			socket.close();
@@ -44,14 +50,16 @@ public class PacketHandler implements Runnable
 		}
 	}
 
-	public void forwardToRouter(EndpointPacketData ePack)
+	public void forwardToRouter()
 	{
-		RouterPacketData newRPack = new RouterPacketData(ePack.getNetIdString(), ePack.getPayload());
+		String netIdString = decoder.getNetIdString(data);
+		String payload = decoder.getTarget(ProtocolTypes.PAYLOAD, data);
+		byte[] dataToForward = generator.createRouterOrEndpointPacket(netIdString, payload, "endpoint");
 		int attemptsToSend = 0;
 		try
 		{
 			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(newRPack.getData(), newRPack.getData().length, InetAddress.getByName(nextRouter), nextPort);
+			DatagramPacket packet = new DatagramPacket(dataToForward, dataToForward.length, InetAddress.getByName(nextRouter), nextPort);
 			while (attemptsToSend < 3)
 			{
 				System.out.println("forwarding the packet to: " + nextRouter + "\n    PORT: " + nextPort);
@@ -103,15 +111,24 @@ public class PacketHandler implements Runnable
 	
 	@Override
 	public void run()
-	{		
-		if (data[0] == (byte) 1)
+	{	
+
+		if (data[0] != ProtocolTypes.GOOD_TO_GO)
+		{
+			while (!goodToGo) {}
+		}
+		else
+		{
+			goodToGo = true;
+		}
+
+		if (data[0] == (byte) ProtocolTypes.ROUTER)
 		{
 			try 
 			{
-				RouterPacketData rPack = new RouterPacketData(data);
-				byte[] ackRes = rPack.createAck();
+				byte[] ackRes = decoder.createAck(data, ProtocolTypes.ENDPOINT);
 				sendAck(ackRes);
-				forwardToApplication(rPack);
+				forwardToApplication();
 			} 
 			catch (Exception e) 
 			{
@@ -122,10 +139,9 @@ public class PacketHandler implements Runnable
 		{
 			try
 			{
-				EndpointPacketData ePack = new EndpointPacketData(data);
-				byte[] ackRes = ePack.createAck();
+				byte[] ackRes = decoder.createAck(data, ProtocolTypes.ENDPOINT);
 				sendAck(ackRes);
-				forwardToRouter(ePack);
+				forwardToRouter();
 			}
 			catch (Exception e)
 			{

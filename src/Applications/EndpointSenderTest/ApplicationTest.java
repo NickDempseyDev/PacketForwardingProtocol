@@ -3,14 +3,13 @@ package Applications.EndpointSenderTest;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-
-import Protocol.EndpointPacketData;
-import Protocol.PacketHelper;
+import Protocol.PacketGenerator;
 
 public class ApplicationTest implements Runnable
 {
 	InetAddress myIp;
 	int localRouterPort;
+	PacketGenerator generator = new PacketGenerator();
 
 	public ApplicationTest(InetAddress myIp)
 	{
@@ -21,13 +20,13 @@ public class ApplicationTest implements Runnable
 	public void sendPacket()
 	{
 		// send a packet to the other endpoint
-		EndpointPacketData packData = new EndpointPacketData("tcd.scss", "payload message");
+		byte[] packData = generator.createRouterOrEndpointPacket("tcd.scss", "Hey endpointreceiver!", "endpoint");
 		try
 		{
 			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket packet = null;
-			packet = new DatagramPacket(packData.getData(), packData.getData().length, InetAddress.getLocalHost(), localRouterPort);
-			System.out.println("endpoint sender application forwarding the packet to: " + localRouterPort + "\n    netId: " + packData.getNetIdString() + "\n    payload: " + packData.getPayload());
+			packet = new DatagramPacket(packData, packData.length, InetAddress.getLocalHost(), localRouterPort);
+			System.out.println("endpoint sender application forwarding the packet to: " + localRouterPort + "\n    netId: " + "tcd.scss" + "\n    payload: " + "Hey endpointreceiver!");
 			socket.send(packet);
 			socket.close();
 		} 

@@ -7,17 +7,9 @@ public class Router3 {
 	public static void main(String[] args) {
 		try
 		{
-			// System.out.println("i am router2 and my ip's are: ");
-			// InetAddress localhost = InetAddress.getLocalHost();
-			// InetAddress[] allMyIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
-  			// if (allMyIps != null) {
-    		// 	System.out.println(" Full list of IP addresses:");
-    		// 	for (int i = 0; i < allMyIps.length; i++) {
-			// 		System.out.println("    " + allMyIps[i]);
-    		// 	}
-  			// }
-			//getByName("172.20.44.3")
-			Router router = new Router("router3", InetAddress.getByName("router3"));
+			InetAddress localhost = InetAddress.getLocalHost();
+			InetAddress[] myIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
+			Router router = new Router("router3", myIps);
 			router.start();
 		}
 		catch (Exception e)

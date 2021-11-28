@@ -10,21 +10,14 @@ public class EndpointReceiverTest
 	{
 		try
 		{
-			// System.out.println("i am endpoint receiver and my ip's are: ");
-			// InetAddress localhost = InetAddress.getLocalHost();
-			// InetAddress[] allMyIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
-  			// if (allMyIps != null) {
-    		// 	System.out.println(" Full list of IP addresses:");
-    		// 	for (int i = 0; i < allMyIps.length; i++) {
-			// 		System.out.println("    " + allMyIps[i]);
-    		// 	}
-  			// }
-			EndpointRouter router = new EndpointRouter("EndpointRouterReceiver", "endpointreceiver", "localhost");
+			InetAddress localhost = InetAddress.getLocalHost();
+			InetAddress[] myIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
+			EndpointRouter router = new EndpointRouter("endpointreceiver", myIps, "router3");
 			ApplicationTest application = new ApplicationTest(InetAddress.getLocalHost());
 			Thread tRouter = new Thread(router);
 			Thread tApplication = new Thread(application);
 			tRouter.start();
-			Thread.sleep(100);
+			Thread.sleep(6000);
 			tApplication.start();
 		}
 		catch (Exception e)

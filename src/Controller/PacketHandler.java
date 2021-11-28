@@ -6,7 +6,9 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import Protocol.ControllerPacketData;
+import Protocol.PacketDecoder;
+import Protocol.PacketGenerator;
+import Protocol.ProtocolTypes;
 
 public class PacketHandler implements Runnable
 {
@@ -14,6 +16,8 @@ public class PacketHandler implements Runnable
 	int fromPort;
 	HashMap<String, HashMap<String, String>> routingTable;
 	HashMap<String, String> netIdOwnershipTable;
+	PacketDecoder decoder = new PacketDecoder();
+	PacketGenerator generator = new PacketGenerator();
 
 	public PacketHandler(byte[] data, HashMap<String, HashMap<String, String>> routingTable, HashMap<String, String> netIdOwnershipTable, int fromPort)
 	{
@@ -46,13 +50,14 @@ public class PacketHandler implements Runnable
 		return list;
 	}
 
-	public void sendNextHop(String fromIp, String nextHopIp, String netId, int fromPort)
+	public void sendNextHop(String fromIp, String nextHopIp, String netIdString, int fromPort)
 	{
-		ControllerPacketData dataN = new ControllerPacketData(netId, nextHopIp, "", (byte) 0x5);
+
+		byte[] data = generator.createControllerResponsePacket(netIdString, nextHopIp);
 		try 
 		{
 			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(dataN.getData(), dataN.getData().length, InetAddress.getByName(fromIp), fromPort);
+			DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName(fromIp), fromPort);
 			System.out.println("Sending " + fromIp + " their next hop: " + nextHopIp);
 			socket.send(packet);
 			socket.close();
@@ -89,11 +94,31 @@ public class PacketHandler implements Runnable
 		}
 	}
 
+	public void handleHello(String fromIpStr, InetAddress[] fromIps, int fromPort)
+	{
+
+	}
+
 	@Override
 	public void run()
 	{
-		ControllerPacketData packet = new ControllerPacketData(data);
-		sendNextHops(packet.getNetIdString(), packet.getFromIp());
+		if (data[0] == ProtocolTypes.CONTROLLER_REQUEST)
+		{
+			String netIdString = decoder.getNetIdString(data);
+			String fromIpStr = decoder.getTarget(ProtocolTypes.FROM_IP_STR, data);
+			sendNextHops(netIdString, fromIpStr);
+		}
+		// else if (data[0] == ProtocolTypes.HELLO_R)
+		// {
+		// 	String fromIpStr = decoder.getTarget(ProtocolTypes.FROM_IP_STR, data);
+		// 	ArrayList<InetAddress> fromIps = decoder.getFromIpsInetAddress(data);
+
+		// 	handleHello(fromIpStr, fromIps, fromPort);
+		// }
+		else
+		{
+			System.out.println("shouldn't be happening");
+		}
 	}
 
 	protected class NextHopPair

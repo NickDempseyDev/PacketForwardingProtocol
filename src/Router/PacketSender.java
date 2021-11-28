@@ -3,8 +3,6 @@ package Router;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import Protocol.PacketHelper;
-import Protocol.RouterPacketData;
 
 public class PacketSender implements Runnable
 {

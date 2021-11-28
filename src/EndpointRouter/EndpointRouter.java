@@ -4,27 +4,55 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import Protocol.PacketGenerator;
+
 public class EndpointRouter implements Runnable
 {
 	int listeningPort = 51510;
 	String routerName;
-	String myIp;
+	InetAddress[] myIps;
 	String nextRouter;
+	Boolean goodToGo = false;
+	PacketGenerator generator = new PacketGenerator();
 
-	public EndpointRouter(String routerName, String myIp, String nextRouter)
+	public EndpointRouter(String routerName, InetAddress[] myIps, String nextRouter)
 	{
 		this.routerName = routerName;
-		this.myIp = myIp;
+		this.myIps = myIps;
 		this.nextRouter = nextRouter;
+	}
+
+	public void sendHello()
+	{
+		try
+		{
+			DatagramSocket socket = new DatagramSocket();
+			byte[] bytes = generator.createHelloPacket(routerName, myIps);
+			DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName("controller"), 51510);
+			socket.send(packet);
+			socket.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public void start()
 	{
 		try
 		{
-			System.out.println("MY IP IS: " + InetAddress.getByName(myIp));
+			System.out.println("MY IP(s) IS/ARE: ");
+			for (InetAddress inetAddress : myIps) {
+				System.out.print(inetAddress + " ");
+			}
+			
+			System.out.println("\nSending Hello...");
+
+			sendHello();
+
 			boolean tempBool = true;
-			DatagramSocket socket = new DatagramSocket(listeningPort, InetAddress.getByName(myIp));
+			DatagramSocket socket = new DatagramSocket(listeningPort, InetAddress.getByName(routerName));
 			while (tempBool)
 			{
 				byte[] buffer = new byte[1500];
@@ -43,7 +71,7 @@ public class EndpointRouter implements Runnable
 					nextPort = 51510;
 				}
 
-				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), nextRouter, nextPort);
+				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), nextRouter, nextPort, goodToGo);
 				Thread t = new Thread(packetHandler);
 				t.start();
 			}
