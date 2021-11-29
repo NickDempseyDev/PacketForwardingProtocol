@@ -18,6 +18,12 @@ networks:
       driver: default
       config:
         - subnet: "172.20.44.0/24"
+  network4:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.20.55.0/24"
 
 # networks: 
 #   network1:  
@@ -26,82 +32,93 @@ networks:
 #     name: network2
         
 services:
-
   router1:
     container_name: router1
-    build: 
-      context: ./src/Applications
-      dockerfile: ./Router1/Dockerfile
     volumes: 
       - .:/dev/cs33031
     networks:
       - network1
       - network2
-    environment: 
-      PORT_R: tester123
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    environment:
+      - name=router1
+    command: >
+              sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
     depends_on:
       - router2
 
   router2:
     container_name: router2
-    build: 
-      context: ./src/Applications
-      dockerfile: ./Router2/Dockerfile
     volumes: 
       - .:/dev/cs33031
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    environment:
+      - name=router2
+    command: >
+              sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
     networks:
       - network2
       - network3
     depends_on:
       - endpointreceiver
 
-  # router3:
-  #   container_name: router3
-  #   build: 
-  #     context: ./src/Applications
-  #     dockerfile: ./Router3/Dockerfile
-  #   volumes: 
-  #     - .:/dev/cs33031
-  #   networks:
-  #     - network1
-  #   depends_on:
-  #     - endpointreceiver
-
-  endpointsender:
-    container_name: endpointsender
-    build: 
-      context: ./src/Applications
-      dockerfile: ./EndpointSenderTest/Dockerfile
+  router3:
+    container_name: router3
     volumes: 
       - .:/dev/cs33031
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    environment:
+      - name=router3
+    command: >
+              sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
     networks:
-      - network1
+      - network3
+      - network4
     depends_on:
       - router1
 
-  endpointreceiver:
-    container_name: endpointreceiver
-    build: 
-      context: ./src/Applications
-      dockerfile: ./EndpointReceiverTest/Dockerfile
+  endpointsender:
+    container_name: endpointsender
     volumes: 
       - .:/dev/cs33031
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    command: >
+              sh -c "java -cp ../bin Applications.EndpointSenderTest.EndpointSenderTest"
     networks:
-      - network3
+      - network1
+    depends_on:
+      - router3
+
+  endpointreceiver:
+    container_name: endpointreceiver
+    volumes: 
+      - .:/dev/cs33031
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    command: >
+              sh -c "java -cp ../bin Applications.EndpointReceiverTest.EndpointReceiverTest"
+    networks:
+      - network4
     depends_on:
       - controller
 
   controller:
     container_name: controller
-    build: 
-      context: ./src/Applications
-      dockerfile: ./ControllerTest/Dockerfile
     volumes: 
       - .:/dev/cs33031
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    command: >
+              sh -c "java -cp ../bin Applications.ControllerTest.ControllerTest"
     networks:
       - network1
       - network2
       - network3
+      - network4
 
   # wireshark:
   #   image: lscr.io/linuxserver/wireshark

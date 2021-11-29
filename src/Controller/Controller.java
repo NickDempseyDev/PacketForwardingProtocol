@@ -24,8 +24,8 @@ public class Controller
 
 	// to deduce from 'Hello' packets
 	ArrayList<byte[]> tempQueue = new ArrayList<byte[]>();
-	HashMap<String, ArrayList<Integer>> networks;
-	HashMap<String, ArrayList<String>> connections; // can create adj list from this
+	HashMap<String, ArrayList<Integer>> networks = new HashMap<String, ArrayList<Integer>>();
+	HashMap<String, ArrayList<String>> connections = new HashMap<String, ArrayList<String>>(); // can create adj list from this
 
 	// manually input from controller
 	HashMap<String, String> netIdOwnershipTable;
@@ -47,6 +47,21 @@ public class Controller
 		this.myIp = new String("controller");
 		this.netIdOwnershipTable = netIdOwnershipTable;
 		this.totalRoutersOrEndpoints = totalRouterOrEndpoints;
+
+		try
+		{
+			InetAddress localhost = InetAddress.getLocalHost();
+			InetAddress[] myIps = InetAddress.getAllByName(localhost.getCanonicalHostName());
+			for (InetAddress inetAddress : myIps)
+			{
+				System.out.println(inetAddress.getHostAddress());
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
 	}
 
 	public HashMap<String, HashMap<String, String>> generateRoutingTableManually(String file)
@@ -158,6 +173,19 @@ public class Controller
 		this.routingTable = graph.generateRoutingTable();
 		sendAllGoodPackets();
 		System.out.println("send all good packets");
+		// printNetwork();
+	}
+
+	public void printNetwork()
+	{
+		for (String router : routingTable.keySet()) 
+		{
+			for (String toRouter : routingTable.get(router).keySet())
+			{
+				System.out.println(router + " -> " + toRouter + " = " + routingTable.get(router).get(toRouter));
+			}
+			System.out.println();
+		}
 	}
 
 	public void start()
@@ -165,37 +193,33 @@ public class Controller
 		try
 		{
 			boolean forever = true;
-			DatagramSocket socket = new DatagramSocket(51510, InetAddress.getByName(myIp));
+			DatagramSocket socket = new DatagramSocket(51510);
 			while (forever)
 			{
 				byte[] buf = new byte[1500];
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
-				byte[] data = new byte[packet.getLength()];
-				System.arraycopy(buf, 0, data, 0, data.length);
-				if (data[0] == ProtocolTypes.HELLO_R)
+				System.out.println("Received packet");
+				if (packet.getData()[0] == ProtocolTypes.HELLO_R)
 				{
-					HelloHandler handle = new HelloHandler(data, tempQueue, safeToAdd, counter);
+					HelloHandler handle = new HelloHandler(this, packet);
 					Thread t = new Thread(handle);
 					t.start();
 				}
-				else if (counter == totalRoutersOrEndpoints)
-				{
-					createNetwork();
-				}
 				else
 				{
-					PacketHandler handler = new PacketHandler(data, routingTable, netIdOwnershipTable, packet.getPort());
+					PacketHandler handler = new PacketHandler(packet, routingTable, netIdOwnershipTable, packet.getPort());
 					Thread t = new Thread(handler);
 					t.start();
 				}
 			}
+
 			socket.close();
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-
+		System.out.println("Out of loop OH NO");
 	}
 }

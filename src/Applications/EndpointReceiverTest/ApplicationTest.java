@@ -20,7 +20,6 @@ public class ApplicationTest implements Runnable
 	{
 		try
 		{
-			System.out.println("MY IP IS: " + myIp.getHostAddress());
 			boolean tempBool = true;
 			DatagramSocket socket = new DatagramSocket(51511, InetAddress.getByName("localhost"));
 			while (tempBool)

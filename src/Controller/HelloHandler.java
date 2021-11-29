@@ -1,41 +1,61 @@
 package Controller;
 
-import java.util.ArrayList;
-
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import Protocol.PacketDecoder;
 import Protocol.ProtocolTypes;
 
 public class HelloHandler implements Runnable
 {
+	Controller controller;
 	byte[] data;
-	Boolean safeToAdd;
-	ArrayList<byte[]> queue;
-	Integer counter;
+	DatagramPacket packetF = null;
 	PacketDecoder decoder = new PacketDecoder();
 
-	public HelloHandler(byte[] data, ArrayList<byte[]> queue, Boolean safeToAdd, Integer counter)
+	public HelloHandler(Controller controller, DatagramPacket packetF)
 	{
-		this.data = data;
-		this.safeToAdd = safeToAdd;
-		this.queue = queue;
-		this.counter = counter;
+		this.controller = controller;
+		this.packetF = packetF;
+	}
+
+	public void sendAck()
+	{
+		try
+		{
+			byte[] ack = decoder.createAck(data, ProtocolTypes.ACK);
+			DatagramSocket sock = new DatagramSocket();
+			DatagramPacket packet = new DatagramPacket(ack, ack.length, packetF.getAddress(), packetF.getPort());
+			sock.send(packet);
+			sock.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void run()
 	{
-		System.out.println("TRYING to add packet from: " + decoder.getTarget(ProtocolTypes.FROM_IP_STR, data) + " to the queue");
+		data = new byte[packetF.getLength()];
+		System.arraycopy(packetF.getData(), 0, data, 0, data.length);
+		sendAck();
+		System.out.println("received Hello from " + decoder.getTarget(ProtocolTypes.FROM_IP_STR, data));
 		Boolean stop = false;
 		while(!stop)
 		{
-			if (safeToAdd)
+			if (controller.safeToAdd)
 			{
-				safeToAdd = false;
-				queue.add(data);
-				System.out.println("ADDED packet from: " + decoder.getTarget(ProtocolTypes.FROM_IP_STR, data) + " to the queue");
-				counter++;
+				controller.safeToAdd = false;
+				controller.tempQueue.add(data);
+				controller.counter++;
+				controller.safeToAdd = true;
 				stop = true;
 			}
+		}
+		if (controller.counter == controller.totalRoutersOrEndpoints)
+		{
+			controller.createNetwork();
 		}
 	}
 }

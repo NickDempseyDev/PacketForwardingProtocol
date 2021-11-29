@@ -42,11 +42,6 @@ public class EndpointRouter implements Runnable
 	{
 		try
 		{
-			System.out.println("MY IP(s) IS/ARE: ");
-			for (InetAddress inetAddress : myIps) {
-				System.out.print(inetAddress + " ");
-			}
-			
 			System.out.println("\nSending Hello...");
 
 			sendHello();
@@ -62,7 +57,7 @@ public class EndpointRouter implements Runnable
 				byte[] data = new byte[packet.getLength()];
 				System.arraycopy(buffer, 0, data, 0, data.length);
 				int nextPort;
-				if (data[0] == (byte) 1)
+				if (packet.getData()[0] == (byte) 1)
 				{
 					nextPort = 51511;
 				}
@@ -71,7 +66,7 @@ public class EndpointRouter implements Runnable
 					nextPort = 51510;
 				}
 
-				PacketHandler packetHandler = new PacketHandler(data, packet.getAddress(), packet.getPort(), nextRouter, nextPort, goodToGo);
+				PacketHandler packetHandler = new PacketHandler(this, nextRouter, nextPort, packet);
 				Thread t = new Thread(packetHandler);
 				t.start();
 			}

@@ -35,10 +35,29 @@ public class Router
 	{
 		try
 		{
+			Thread.sleep(1000);
 			DatagramSocket socket = new DatagramSocket();
 			byte[] bytes = generator.createHelloPacket(routerName, myIps);
-			DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName("controller"), 51510);
-			socket.send(packet);
+			byte[] buf = new byte[1500];
+			DatagramPacket packetS = new DatagramPacket(bytes, bytes.length, InetAddress.getByName("controller"), 51510);
+			System.out.println(InetAddress.getByName("controller").getHostAddress());
+			boolean tryAgain = true;
+			while (tryAgain) {
+				socket.send(packetS);
+				try
+				{
+					DatagramPacket packet = new DatagramPacket(buf, buf.length);
+					socket.setSoTimeout(1000);
+					socket.receive(packet);
+					tryAgain = false;
+				}
+				catch (Exception e)
+				{
+					System.out.println("TIMEOUT");
+					tryAgain = true;
+				}
+			}
+			System.out.println("received ack from controller for hello");
 			socket.close();
 		}
 		catch (Exception e)
@@ -51,27 +70,19 @@ public class Router
 	{
 		try
 		{
-			System.out.println("MY IP(s) IS/ARE: ");
-			for (InetAddress inetAddress : myIps) {
-				System.out.print(inetAddress + " ");
-			}
-			
 			System.out.println("\nSending Hello...");
 
 			sendHello();
 
 			boolean tempBool = true;
-			DatagramSocket socket = new DatagramSocket(listeningPort, InetAddress.getByName("0.0.0.0"));
+			DatagramSocket socket = new DatagramSocket(listeningPort);
 			while (tempBool)
 			{
 				byte[] buffer = new byte[1500];
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
-				
-				byte[] dataN = new byte[packet.getLength()];
-				System.arraycopy(buffer, 0, dataN, 0, dataN.length);
 
-				PacketHandler packetHandler = new PacketHandler(dataN, packet.getAddress(), packet.getPort(), routingTable, routerName, myIps, goodToGo);
+				PacketHandler packetHandler = new PacketHandler(this, packet);
 				Thread t = new Thread(packetHandler);
 				t.start();
 			}

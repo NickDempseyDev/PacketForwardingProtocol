@@ -6,15 +6,15 @@ import java.util.Set;
 
 public class NetworkGraph
 {
-	HashMap<String, Integer> indexLookUp;
-	HashMap<Integer, String> nameLookUp;
+	HashMap<String, Integer> indexLookUp = new HashMap<String, Integer>();
+	HashMap<Integer, String> nameLookUp = new HashMap<Integer, String>();
 	HashMap<String, ArrayList<String>> connections;
 	DirEdge[][] adjList;
 
 	public NetworkGraph(HashMap<String, ArrayList<String>> connections, int totalNoOfRouters)
 	{
 		this.connections = connections;
-		adjList = new DirEdge[totalNoOfRouters][0];
+		adjList = new DirEdge[totalNoOfRouters][];
 		Set<String> keys = connections.keySet();
 		Integer counter = 0;
 		for (String router : keys)
@@ -31,7 +31,7 @@ public class NetworkGraph
 			int count = 0;
 			for (String to : connections.get(currRouterName))
 			{
-				adjList[i][count] = new DirEdge(to, indexLookUp.get(to));
+				adjList[i][count++] = new DirEdge(to, indexLookUp.get(to));
 			}
 		}
 	}
@@ -82,44 +82,39 @@ public class NetworkGraph
 				if (distanceTo[edge.indexInDirEdge] > distanceTo[currentVertex] + 1)
 				{
 					distanceTo[edge.indexInDirEdge] = distanceTo[currentVertex] + 1;
-					String curr = (path[currentVertex].equals("") ? "" : path[currentVertex] + ":");
-					//path[edge.indexInDirEdge] = curr + nameLookUp.get(edge.indexInDirEdge);
+					String curr = (path[currentVertex].length() == 0 ? "" : path[currentVertex] + ":");
 					path[edge.indexInDirEdge] = curr + edge.name;
 				}
 			}
-			HashMap<String, String> ret = new HashMap<String, String>();
-			for (int i = 0; i < path.length; i++)
-			{
-				String[] paths = path[i].split(":");
-				if (paths.length > 1)
-				{
-					String dest = paths[paths.length - 2];
-					String sourcePlusOne = paths[0];
-					ret.put(dest, sourcePlusOne);
-				}
-				else
-				{
-					ret.put(paths[0], paths[0]);
-				}
-			}
-			
-			return ret;
 		}
-
-		return null;
+		HashMap<String, String> ret = new HashMap<String, String>();
+		for (int i = 0; i < path.length; i++)
+		{
+			String[] paths = path[i].split(":");
+			if (path[i].length() != 0)
+			{
+				String dest = paths[paths.length - 1];
+				String sourcePlusOne = paths[0];
+				ret.put(dest, sourcePlusOne);
+			}
+		}			
+		return ret;
 	}
 
 	private int findMin(ArrayList<Integer> queue, int[] distanceTo)
 	{
 		int min = Integer.MAX_VALUE;
-		for (Integer i : queue)
+		int minIndex = 0;
+		for (int i = 0; i < queue.size(); i++)
 		{
-			if (distanceTo[i] < min)
+			int index = queue.get(i);
+			if (min > distanceTo[index])
 			{
-				min = i;
+				minIndex = i;
+				min = distanceTo[index];
 			}
 		}
-		return min;
+		return queue.remove(minIndex);
 	}
 
 	public HashMap<String, HashMap<String, String>> generateRoutingTable()

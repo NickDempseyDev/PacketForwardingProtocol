@@ -12,6 +12,7 @@ import Protocol.ProtocolTypes;
 
 public class PacketHandler implements Runnable
 {
+	DatagramPacket packet;
 	byte[] data;
 	int fromPort;
 	HashMap<String, HashMap<String, String>> routingTable;
@@ -19,9 +20,9 @@ public class PacketHandler implements Runnable
 	PacketDecoder decoder = new PacketDecoder();
 	PacketGenerator generator = new PacketGenerator();
 
-	public PacketHandler(byte[] data, HashMap<String, HashMap<String, String>> routingTable, HashMap<String, String> netIdOwnershipTable, int fromPort)
+	public PacketHandler(DatagramPacket packet, HashMap<String, HashMap<String, String>> routingTable, HashMap<String, String> netIdOwnershipTable, int fromPort)
 	{
-		this.data = data;
+		this.packet = packet;
 		this.routingTable = routingTable;
 		this.netIdOwnershipTable = netIdOwnershipTable;
 		this.fromPort = fromPort;
@@ -94,14 +95,11 @@ public class PacketHandler implements Runnable
 		}
 	}
 
-	public void handleHello(String fromIpStr, InetAddress[] fromIps, int fromPort)
-	{
-
-	}
-
 	@Override
 	public void run()
 	{
+		data = new byte[packet.getLength()];
+		System.arraycopy(packet.getData(), 0, data, 0, data.length);
 		if (data[0] == ProtocolTypes.CONTROLLER_REQUEST)
 		{
 			String netIdString = decoder.getNetIdString(data);

@@ -17,7 +17,7 @@ public class EndpointReceiverTest
 			Thread tRouter = new Thread(router);
 			Thread tApplication = new Thread(application);
 			tRouter.start();
-			Thread.sleep(6000);
+			Thread.sleep(1000);
 			tApplication.start();
 		}
 		catch (Exception e)

@@ -213,7 +213,7 @@ public class PacketGenerator extends ProtocolTypes
 		int currPos = 1;
 		byte[] data = new byte[sizeOfData];
 		
-		data[0] = HELLO_R;
+		data[0] = GOOD_TO_GO;
 		
 		data[currPos++] = (byte) FROM_IP_STR; // from ip type
 		data[currPos++] = (byte) fromIpStr.getBytes().length; // from ip length

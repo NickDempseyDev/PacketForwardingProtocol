@@ -3,21 +3,13 @@ package Controller;
 import java.net.InetAddress;
 
 public class Test {
-	public Test()
+	public Test(Integer i)
 	{
-		try
-		{
-			InetAddress localhost = InetAddress.getLocalHost();
-			InetAddress[] ips = InetAddress.getAllByName(localhost.getCanonicalHostName());
-			byte[] ip = ips[0].getAddress();
-			int a = 5;
-		}
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-		}
+		i++;
 	}
 	public static void main(String[] args) {
-		Test test = new Test();
+		Integer i = 1;
+		Test test = new Test(i);
+		System.out.println(i);
 	}
 }

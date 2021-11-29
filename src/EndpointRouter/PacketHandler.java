@@ -9,26 +9,22 @@ import Protocol.ProtocolTypes;
 
 public class PacketHandler implements Runnable
 {
-
+	EndpointRouter router;
+	DatagramPacket packet;
 	byte[] data;
-	int fromPort;
-	InetAddress fromIp;
 	String nextRouter;
 	String localApplication;
 	int nextPort;
 	PacketDecoder decoder = new PacketDecoder();
 	PacketGenerator generator = new PacketGenerator();
-	Boolean goodToGo;
 	
-	public PacketHandler(byte[] data, InetAddress fromIp, int fromPort, String nextRouter, int nextPort, Boolean goodToGo)
+	public PacketHandler(EndpointRouter router, String nextRouter, int nextPort, DatagramPacket packet)
 	{
-		this.data = data;
-		this.fromIp = fromIp;
-		this.fromPort = fromPort;
 		this.nextRouter = nextRouter;
 		this.nextPort = nextPort;
 		this.localApplication = "localhost";
-		this.goodToGo = goodToGo;
+		this.packet = packet;
+		this.router = router;
 	}
 
 	public void forwardToApplication()
@@ -99,7 +95,7 @@ public class PacketHandler implements Runnable
 		try
 		{
 			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket packet = new DatagramPacket(ack, ack.length, fromIp, fromPort);
+			DatagramPacket packet = new DatagramPacket(ack, ack.length, this.packet.getAddress(), this.packet.getPort());
 			socket.send(packet);
 			socket.close();
 		} 
@@ -112,14 +108,18 @@ public class PacketHandler implements Runnable
 	@Override
 	public void run()
 	{	
+		data = new byte[packet.getLength()];
+		System.arraycopy(packet.getData(), 0, data, 0, data.length);
 
 		if (data[0] != ProtocolTypes.GOOD_TO_GO)
 		{
-			while (!goodToGo) {}
+			while (!router.goodToGo) {}
 		}
 		else
 		{
-			goodToGo = true;
+			router.goodToGo = true;
+			System.out.println("received good to go from controller");
+			return;
 		}
 
 		if (data[0] == (byte) ProtocolTypes.ROUTER)

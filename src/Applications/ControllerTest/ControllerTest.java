@@ -9,7 +9,7 @@ public class ControllerTest
 	{
 		HashMap<String, String> netIdOwnershipTable = new HashMap<String, String>();
 		netIdOwnershipTable.put("tcd.scss", "endpointreceiver");
-		Controller controller = new Controller(netIdOwnershipTable, 4);
+		Controller controller = new Controller(netIdOwnershipTable, 5);
 		controller.start();
 	}
 
