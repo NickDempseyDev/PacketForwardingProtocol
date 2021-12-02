@@ -173,7 +173,7 @@ public class Controller
 		this.routingTable = graph.generateRoutingTable();
 		sendAllGoodPackets();
 		System.out.println("send all good packets");
-		// printNetwork();
+		printNetwork();
 	}
 
 	public void printNetwork()

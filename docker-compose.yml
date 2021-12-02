@@ -11,19 +11,37 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: "172.20.33.0/24"
+        - subnet: "172.20.22.0/24"
   network3:
     driver: bridge
     ipam:
       driver: default
       config:
-        - subnet: "172.20.44.0/24"
+        - subnet: "172.20.33.0/24"
   network4:
     driver: bridge
     ipam:
       driver: default
       config:
+        - subnet: "172.20.44.0/24"
+  network5:  
+    driver: bridge
+    ipam:
+      driver: default
+      config:
         - subnet: "172.20.55.0/24"
+  network6:  
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.20.66.0/24"
+  network7:  
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.20.77.0/24"
 
 # networks: 
 #   network1:  
@@ -39,6 +57,7 @@ services:
     networks:
       - network1
       - network2
+      - network3
     image: openjdk:15
     working_dir: /dev/cs33031/src/
     environment:
@@ -47,6 +66,7 @@ services:
               sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
     depends_on:
       - router2
+      - router3
 
   router2:
     container_name: router2
@@ -59,10 +79,10 @@ services:
     command: >
               sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
     networks:
-      - network2
       - network3
+      - network6
     depends_on:
-      - endpointreceiver
+      - router4
 
   router3:
     container_name: router3
@@ -75,10 +95,58 @@ services:
     command: >
               sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
     networks:
-      - network3
+      - network2
       - network4
     depends_on:
-      - router1
+      - router5
+
+  router4:
+    container_name: router4
+    volumes: 
+      - .:/dev/cs33031
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    environment:
+      - name=router4
+    command: >
+              sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
+    networks:
+      - network6
+      - network7
+    depends_on:
+      - endpointreceiver
+
+  router5:
+    container_name: router5
+    volumes: 
+      - .:/dev/cs33031
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    environment:
+      - name=router5
+    command: >
+              sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
+    networks:
+      - network4
+      - network5
+    depends_on:
+      - router6
+
+  router6:
+    container_name: router6
+    volumes: 
+      - .:/dev/cs33031
+    image: openjdk:15
+    working_dir: /dev/cs33031/src/
+    environment:
+      - name=router6
+    command: >
+              sh -c "java -cp ../bin Applications.RouterImplementation.RouterImplementation $$name"
+    networks:
+      - network5
+      - network7
+    depends_on:
+      - endpointreceiver
 
   endpointsender:
     container_name: endpointsender
@@ -91,7 +159,7 @@ services:
     networks:
       - network1
     depends_on:
-      - router3
+      - router1
 
   endpointreceiver:
     container_name: endpointreceiver
@@ -102,7 +170,7 @@ services:
     command: >
               sh -c "java -cp ../bin Applications.EndpointReceiverTest.EndpointReceiverTest"
     networks:
-      - network4
+      - network7
     depends_on:
       - controller
 
@@ -119,19 +187,6 @@ services:
       - network2
       - network3
       - network4
-
-  # wireshark:
-  #   image: lscr.io/linuxserver/wireshark
-  #   container_name: wireshark
-  #   cap_add:
-  #     - NET_ADMIN
-  #   network_mode: host
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #     - TZ=Europe/London
-  #   volumes:
-  #     - /path/to/config:/config
-  #   ports:
-  #     - 3000:3000 #optional
-  #   restart: unless-stopped
+      - network5
+      - network6
+      - network7

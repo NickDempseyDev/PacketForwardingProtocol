@@ -1,5 +1,6 @@
 @ECHO OFF
-del bin
+docker-compose down
+echo y | del bin /Q
 cd src
 javac Applications/RouterImplementation/RouterImplementation.java -d ../bin
 javac Applications/EndpointSenderTest/EndpointSenderTest.java -d ../bin
