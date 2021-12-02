@@ -32,7 +32,8 @@ function get_type(type)
   elseif type ==    3 then type_status = "NEXT HOP"
   elseif type ==    4 then type_status = "PAYLOAD" 
   elseif type ==    5 then type_status = "FROM IP STRING"
-  elseif type ==    6 then type_status = "MY NETWORK IDENTIFIER" end
+  elseif type ==    6 then type_status = "ROUTER/ENDPOINT IP ADDRESSES"
+  elseif type ==    7 then type_status = "END OF PACKET" end
   return type_status
 end
 
