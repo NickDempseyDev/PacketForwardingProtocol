@@ -58,7 +58,7 @@ function forwarding_protocol.dissector(buffer, pinfo, tree)
 
   -- Start going through TLV
   local curr_pack_pos = 1
-  while( buffer(curr_pack_pos,1):le_uint() ~= 7 or curr_pack_pos > buffer:len() - 1 )  -- while not the end of the packet
+  while( buffer(curr_pack_pos,1):le_uint() ~= 7 or curr_pack_pos > buffer:len() )  -- while not the end of the packet
   do
     -- isolate type
     local subtree_local = subtree:add(forwarding_protocol, buffer(), "TLV")
