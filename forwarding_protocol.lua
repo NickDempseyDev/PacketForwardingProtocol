@@ -64,7 +64,7 @@ function forwarding_protocol.dissector(buffer, pinfo, tree)
     local subtree_local = subtree:add(forwarding_protocol, buffer(), "TLV")
     local type_ = buffer(curr_pack_pos,1):le_uint()
     local type_str = get_type(type_)
-    subtree_local:add_le(type_lv, type_)
+    subtree_local:add_le(type_lv, type_):append_text(" (" .. type_str .. ")")
     curr_pack_pos = curr_pack_pos + 1
 
     if type_ == 2 then -- if its a combination of net ids
@@ -111,8 +111,6 @@ function forwarding_protocol.dissector(buffer, pinfo, tree)
         end
         subtree_local:add_le(tl_value, ip_str)
       else
-        local lenT = buffer(curr_pack_pos,1):le_uint()
-        curr_pack_pos = curr_pack_pos + 1
         local val = buffer(curr_pack_pos, lenT)
         subtree_local:add_le(tl_value, val)
         curr_pack_pos = curr_pack_pos + lenT
