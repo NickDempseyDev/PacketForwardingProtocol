@@ -40,67 +40,85 @@ end
 function forwarding_protocol.dissector(buffer, pinfo, tree)
   length = buffer:len()
   if length == 0 then return end
-
   pinfo.cols.protocol = forwarding_protocol.name
-
   local subtree = tree:add(forwarding_protocol, buffer(), "My Protocol Data")
-
+  -- Get the packet type
   local type = buffer(0,1):le_uint()
   local type_name = get_packet_name(type)
-
   subtree:add_le(packet_type, buffer(0,1)):append_text(" (" .. type_name .. ")")
-
+  -- If its an ack just return
   if type == 3 then
     return 
   end
 
   -- start TLV
-  local type_one = buffer(1,1):le_uint()
-  local type_one_str = get_type(type_one)
-  subtree:add_le(type_lv, type_one):append_text(" (" .. type_one_str .. ")")
-  
-  local number_of_lvs = 0
-  local current_pos = 0
-  if type_one == 1 then
-    number_of_lvs = 1
-    current_pos = 2
-  else
-    number_of_lvs = buffer(2,1):le_uint()
-    current_pos = 3
-  end
-  subtree:add_le(t_length_v, number_of_lvs)
-  local current_substree_number = 1
-  while( number_of_lvs > 0 )
+  -- local type_one = buffer(1,1):le_uint()
+  -- local type_one_str = get_type(type_one)
+  -- subtree:add_le(type_lv, type_one):append_text(" (" .. type_one_str .. ")")
+
+  -- Start going through TLV
+  local curr_pack_pos = 1
+  while( buffer(curr_pack_pos,1):le_uint() ~= 7 ) -- while not the end of the packet
   do
-    local subtree_local = subtree:add(forwarding_protocol, buffer(), "TLV"..current_substree_number)
-    local length_local = buffer(current_pos,1):le_uint()
-    subtree_local:add_le(t_length_v,length_local)
-    current_pos = current_pos + 1
-    subtree_local:add_le(tl_value, buffer(current_pos,length_local))
-    current_pos = current_pos + length_local
-    number_of_lvs = number_of_lvs - 1
-    current_substree_number = current_substree_number + 1
-  end
-
-  -- insert if condition to check if its a controller pack or a router pack and build accordingly
-  if type == 4 or type == 5 then 
+    -- isolate type
     local subtree_local = subtree:add(forwarding_protocol, buffer(), "TLV")
-    local type = buffer(current_pos, 1):le_uint()
-    local type_text = get_type(type)
-    subtree_local:add_le(type_lv,type):append_text(" (" .. type_text .. ")")
-    current_pos = current_pos + 1
-    local lenghtL = buffer(current_pos, 1):le_uint()
-    subtree_local:add_le(t_length_v,lenghtL)
-    current_pos = current_pos + 1
-    local text = buffer(current_pos, lenghtL)
-    subtree_local:add_le(tl_value, text)
-  elseif type == 1 or type == 2 then 
-    local payload_len = buffer(current_pos,1):le_uint()
-    subtree:add_le(payload_length,payload_len)
-    current_pos = current_pos + 1
-    subtree:add_le(payload_content, buffer(current_pos, payload_len))
-  end
+    local type_ = buffer(curr_pack_pos,1):le_uint()
+    local type_str = get_type(type_)
+    subtree_local:add_le(type_lv, type_)
+    curr_pack_pos = curr_pack_pos + 1
 
+    if type_ == 2 then -- if its a combination of net ids
+      local number_of_netids = buffer(curr_pack_pos, 1):le_uint()
+      subtree_local:add_le(t_length_v, number_of_netids):append_text(" (" .. "number of net ids" .. ")")
+      curr_pack_pos = curr_pack_pos + 1
+      
+      local net_str = ""
+      while( number_of_netids > 0 )
+      do
+        local len = buffer(curr_pack_pos, 1):le_uint()
+        curr_pack_pos = curr_pack_pos + 1
+        local str = buffer(curr_pack_pos, len)
+        curr_pack_pos = curr_pack_pos + len
+
+        if number_of_lvs == 1 then
+          net_str = net_str .. str
+          number_of_netids = number_of_netids - 1
+        else
+          net_str = net_str .. str .. "."
+          number_of_netids = number_of_netids - 1
+        end
+
+      end
+      subtree_local:add_le(tl_value, net_str)
+
+    else -- its just a regular tlv
+
+      local lenT = buffer(curr_pack_pos,1):le_uint()
+      curr_pack_pos = curr_pack_pos + 1
+      subtree_local:add_le(t_length_v, lenT)
+      if type_ == 6 then -- if its an ip
+        local ip_str = ""
+        while( lenT > 0 )
+        do
+          local curr_byte = buffer(curr_pack_pos, 1):le_uint()
+          if lenT == 1 then
+            ip_str = ip_str .. curr_byte
+          else
+            ip_str = ip_str .. curr_byte .. "."
+          end
+          curr_pack_pos = curr_pack_pos + 1
+          lenT = lenT - 1
+        end
+        subtree_local:add_le(tl_value, ip_str)
+      else
+        local lenT = buffer(curr_pack_pos,1):le_uint()
+        curr_pack_pos = curr_pack_pos + 1
+        local val = buffer(curr_pack_pos, lenT)
+        subtree_local:add_le(tl_value, val)
+        curr_pack_pos = curr_pack_pos + lenT
+      end
+    end
+  end
 end
 
 function all_ports(buffer, pinfo, tree)
