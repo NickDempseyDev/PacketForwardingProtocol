@@ -1,4 +1,5 @@
 sudo rm -rf bin
+sudo docker-compose down
 cd src
 javac Applications/RouterImplementation/RouterImplementation.java -d ../bin
 javac Applications/EndpointSenderTest/EndpointSenderTest.java -d ../bin

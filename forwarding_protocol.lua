@@ -20,7 +20,7 @@ function get_packet_name(type)
   elseif type ==    3 then type_name = "ACK"
   elseif type ==    4 then type_name = "CONTROLLER REQUEST" 
   elseif type ==    5 then type_name = "CONTROLLER RESPONSE"
-  elseif type ==    6 then type_name = "HELLO FROM ROUTER"
+  elseif type ==    6 then type_name = "HELLO"
   elseif type ==    7 then type_name = "GOOD TO GO" end
   return type_name
 end
@@ -58,7 +58,7 @@ function forwarding_protocol.dissector(buffer, pinfo, tree)
 
   -- Start going through TLV
   local curr_pack_pos = 1
-  while( buffer(curr_pack_pos,1):le_uint() ~= 7 ) -- while not the end of the packet
+  while( buffer(curr_pack_pos,1):le_uint() ~= 7 or curr_pack_pos > buffer:len() - 1 )  -- while not the end of the packet
   do
     -- isolate type
     local subtree_local = subtree:add(forwarding_protocol, buffer(), "TLV")
