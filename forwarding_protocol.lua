@@ -12,7 +12,6 @@ from_ip = ProtoField.string("forwarding_protocol.from_ip"     , "From IP"    , b
 
 forwarding_protocol.fields = { packet_type, type_lv, t_length_v, tl_value, payload_length, payload_content, next_hop, from_ip }
 
-
 function get_packet_name(type)
   local type_name = "Unknown"
       if type ==    1 then type_name = "ROUTER"
