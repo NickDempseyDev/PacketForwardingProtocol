@@ -1,10 +1,7 @@
 package Applications.EndpointReceiverTest;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import Protocol.PacketDecoder;
-import Protocol.PacketGenerator;
 import Protocol.ProtocolTypes;
 
 public class ApplicationPacketHandler implements Runnable
