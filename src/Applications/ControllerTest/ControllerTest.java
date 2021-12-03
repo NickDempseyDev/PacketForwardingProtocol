@@ -13,11 +13,14 @@ public class ControllerTest
 		controller.start();
 	}
 
+	public void random(){}
+
 	public static void main(String[] args) 
 	{
 		try 
 		{
 			ControllerTest controllerTest = new ControllerTest();	
+			controllerTest.random();
 		} 
 		catch (Exception e)
 		{
